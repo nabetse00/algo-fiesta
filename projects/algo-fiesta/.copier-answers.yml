@@ -1,0 +1,10 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: 1.0.10
+_src_path: gh:algorandfoundation/algokit-python-template
+author_email: esteban.diezlaiz@gmail.com
+author_name: nabetse
+contract_name: event_manager
+deployment_language: typescript
+preset_name: production
+project_name: algo-fiesta
+
