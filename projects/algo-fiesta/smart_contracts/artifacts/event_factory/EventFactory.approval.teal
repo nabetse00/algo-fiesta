@@ -1,0 +1,320 @@
+#pragma version 10
+
+smart_contracts.event_factory.contract.EventFactory.approval_program:
+    txn ApplicationID
+    bnz main_entrypoint@2
+    callsub __init__
+
+main_entrypoint@2:
+    // smart_contracts/event_factory/contract.py:22
+    // class EventFactory(ARC4Contract):
+    txn NumAppArgs
+    bz main_bare_routing@7
+    method "create_event_manager(pay)uint64"
+    txna ApplicationArgs 0
+    match main_create_event_manager_route@4
+    err // reject transaction
+
+main_create_event_manager_route@4:
+    // smart_contracts/event_factory/contract.py:27
+    // @arc4.abimethod
+    txn OnCompletion
+    !
+    assert // OnCompletion is NoOp
+    txn ApplicationID
+    assert // is not creating
+    // smart_contracts/event_factory/contract.py:22
+    // class EventFactory(ARC4Contract):
+    txn GroupIndex
+    int 1
+    -
+    dup
+    gtxns TypeEnum
+    int pay
+    ==
+    assert // transaction type is pay
+    // smart_contracts/event_factory/contract.py:27
+    // @arc4.abimethod
+    callsub create_event_manager
+    itob
+    byte 0x151f7c75
+    swap
+    concat
+    log
+    int 1
+    return
+
+main_bare_routing@7:
+    // smart_contracts/event_factory/contract.py:22
+    // class EventFactory(ARC4Contract):
+    txn OnCompletion
+    !
+    assert // reject transaction
+    txn ApplicationID
+    !
+    assert // is creating
+    int 1
+    return
+
+
+// smart_contracts.event_factory.contract.EventFactory.create_event_manager(pay: uint64) -> uint64:
+create_event_manager:
+    // smart_contracts/event_factory/contract.py:27-28
+    // @arc4.abimethod
+    // def create_event_manager(self, pay: gtxn.PaymentTransaction ) -> UInt64:
+    proto 1 1
+    // smart_contracts/event_factory/contract.py:29
+    // security_checks(UInt64(2))
+    int 2
+    callsub security_checks
+    // smart_contracts/event_factory/contract.py:30
+    // assert pay.amount >= EVENT_CREATION_FEE + EVENT_MANAGER_BOX_MBR + EVENT_MANAGER_CREATOR_BOX_MBR, "Min fee of 2 algos + mbr on event creation"
+    frame_dig -1
+    gtxns Amount
+    int 2029800
+    >=
+    assert // Min fee of 2 algos + mbr on event creation
+    // smart_contracts/event_factory/contract.py:31
+    // app_addr = Global.current_application_address
+    global CurrentApplicationAddress
+    // smart_contracts/event_factory/contract.py:32-41
+    // response = itxn.ApplicationCall(
+    //     approval_program=APPROVAL_BYTES,
+    //     clear_state_program=CLEAR_BYTES,
+    //     global_num_bytes=2,
+    //     global_num_uint=4,
+    //     local_num_bytes=0,
+    //     local_num_uint=0,
+    //     on_completion=OnCompleteAction.NoOp,
+    //     fee=0
+    // ).submit()
+    itxn_begin
+    // smart_contracts/event_factory/contract.py:39
+    // on_completion=OnCompleteAction.NoOp,
+    int NoOp
+    itxn_field OnCompletion
+    // smart_contracts/event_factory/contract.py:38
+    // local_num_uint=0,
+    int 0
+    itxn_field LocalNumUint
+    // smart_contracts/event_factory/contract.py:37
+    // local_num_bytes=0,
+    int 0
+    itxn_field LocalNumByteSlice
+    // smart_contracts/event_factory/contract.py:36
+    // global_num_uint=4,
+    int 4
+    itxn_field GlobalNumUint
+    // smart_contracts/event_factory/contract.py:35
+    // global_num_bytes=2,
+    int 2
+    itxn_field GlobalNumByteSlice
+    // smart_contracts/event_factory/contract.py:34
+    // clear_state_program=CLEAR_BYTES,
+    byte 0x0a810143
+    itxn_field ClearStateProgramPages
+    // smart_contracts/event_factory/contract.py:33
+    // approval_program=APPROVAL_BYTES,
+    byte 0x0a2009000108200204030605260d000c6576656e745f7374617475730f6c6173745f747970655f696e6465780b6576656e745f626567696e096576656e745f656e640b6576656e745f6f776e6572046e616d650374742d0120036f742d020000030681010200063118400003880738311b4100b88004bfe4fc0a8004f91cc3e280046d95748780047140c253361a008e040001003d0064007a0031191444311844361a01570200361a0217c01c361a0317361a0417361a05361a06361a07361a08361a09361a0a31162309493810231244880062234331191444311844361a0117c01c361a0217361a0317361a04311623094938102312448801c5234331191444311844361a0117c01c361a02178805f8234331191444311844361a0117c01c361a0217361a0388065a2343311914443118144423438a0b00282104880106320a8bff38074b0112448bff3820320312447301442229654414448bf63203134427058bf667320781c0d102088bf70c448bf78180a305088bf80c442b8bf76727048bf8678bf92259228b038b020c498c004100758bf95702008b00448b03494e0221040b4b014c594a59210408584c8bfa5702004b01250b25584c8bfb5702004b01240b494e0224584c8bfc5702004b0124584c8bfd5702004b0124584c8bfe5702004c2458800200424f06504f04504f03504f02504c504f02504b014c8800544823088c0342ff8027068bf567222a65448b02082a4c6723880054320a7301448b01098bff3808124480175b4556454e54204d414e414745525d2053746172746564b0898a010032048bff1244312032031244898a020127078bfe8800068bffbf8bff898a02018bff168bfe4c50898a01002229654c494f02448bff1341003e298bff678b001680235b4556454e54204d414e4745525d2053746174757320557064617465642066726f6d204c502708508002746f502708508bff1650b0898a050022470228210488ff79880143320a8bff38074b0112448bff38203203124473014427078bfd88ff7a49880158498bfe22598bfc124449572a08174c573a08178bfc08494f020e4481c8010b81d804082288013b27098bfb88016f4702880173484c570101800131128bfc4c41001e8b08492105594c49154c4f024f02525702008bfd240b2458178bfc088c098b065732088b0916a744800373622d8bfd88ff02498c028bfe8801318cfe1444800361622d8bfd88feec8c00270a8c01228c038b038bfc0c4100468bfe5702008b03494e02250b25588b064922594c49154c494f034f03525702004c5702204f0288016046028b015702004c16504915240a165706004c508c0123088c0342ffb28b008b018801838b028bfe8801ae8cfe8b078bfd8bfe4f038801d3488cfe8b058b068bfc8802f5320a73014c4e0244572208178bfc0b4c8b0409088bff38080e44898a00008800092229654421061344898a000032074922270465440d410006210688fe3b89222b65448b000e410006210488fe2b89898a01018bffbe231244898a02008bfe810a088b00320c0d41002ab12107b2102108b219270bb21e270bb21f8bff8d020003000942000a22b2014200043200b201b342ffce898a02018bfe8bff50898a01028bffbe898a0202222847038bfebe400008228bff8c018c00898b0522598c03228c018b018b030c4100498b055702008b01250b25588c008bff22598c04228c028b028b040c4100228bff5702008b02250b25588b0012410008238bff8c018c00898b0223088c0242ffd68b0123088c0142ffaf228bff8c018c00898a0303320ab18bfeb2288bfdb22723b22449b22c8bffb22ab22922b22323b22280074556542d54434bb22580094576656e74204e4654b2262106b21022b201b3b43c8bfe8bff898a02018bfebe4000088bfe8bffbf42001d8b005702008bff570200504915240a165706004c508bfebc488bfe4cbf8bff4c898a02018bfebe4000088bfe8bffbf42001d8b005702008bff570200504915250a165706004c508bfebc488bfe4cbf8bff4c898a04022228498bfe2259498bff225912448bfcbe400079270a8c00222a654c8c0244228c018b018b020c4100258b0057020080080000000000000000504915240a165706004c508c008b0123088c0142ffd38b03168b004922598bfd0d448bfd240b2104084f025d8bfe152107084916570602270c4c504c8bff150816570602508bfe508bff504c508bfc4cbf4200958b04492105594c49154c494b034f0352495702008bfd240b494e032458178b0308164b0122598bfd0d444f022104084c5d4e024922594c492104594b014f034b02525702008bfe570200504915250a165706004c504e024f03525702008bff570200504915240a165706004c504b01152107084916570602270c4c504c4b02150816570602504f02504c504c508bfcbc488bfc4cbf8bfe8bff8c018c00898a03018bfe573a08178bff08168bfe4c5c3a8cfe8bfd228bfebb8bfe898a020088fd128bfe8bff88001a44320ab18bfeb214b2138bffb21123b2122105b21022b201b3898a02012827098bfe88fd5188fd57231244492104594c492105594c4f024f025249224c2259228b048b030c8b028c004100218b015702008b04240b24588bff16a8410006238c004200098b0423088c0442ffd3898a030088fc972229654421061244b18bfdb22e22b22f8bfeb22d2108b21022b201b3898a0000270628672b22672704226727053203672922672a226780175b4556454e54204d414e414745525d2043726561746564b089
+    itxn_field ApprovalProgramPages
+    // smart_contracts/event_factory/contract.py:32
+    // response = itxn.ApplicationCall(
+    int appl
+    itxn_field TypeEnum
+    // smart_contracts/event_factory/contract.py:40
+    // fee=0
+    int 0
+    itxn_field Fee
+    // smart_contracts/event_factory/contract.py:32-41
+    // response = itxn.ApplicationCall(
+    //     approval_program=APPROVAL_BYTES,
+    //     clear_state_program=CLEAR_BYTES,
+    //     global_num_bytes=2,
+    //     global_num_uint=4,
+    //     local_num_bytes=0,
+    //     local_num_uint=0,
+    //     on_completion=OnCompleteAction.NoOp,
+    //     fee=0
+    // ).submit()
+    itxn_submit
+    itxn CreatedApplicationID
+    // smart_contracts/event_factory/contract.py:42
+    // log("Create manager: event", response.created_app.id, "from", Txn.sender, sep=" ")
+    dup
+    itob
+    byte "Create manager: event "
+    swap
+    concat
+    byte " "
+    concat
+    byte "from"
+    concat
+    byte " "
+    concat
+    txn Sender
+    concat
+    log
+    // smart_contracts/event_factory/contract.py:43-48
+    // itxn.Payment(
+    //     amount=1_000_000,
+    //     receiver=response.created_app.address,
+    //     sender=app_addr,
+    //     fee=0
+    // ).submit()
+    itxn_begin
+    // smart_contracts/event_factory/contract.py:45
+    // receiver=response.created_app.address,
+    dup
+    app_params_get AppAddress
+    assert // application exists
+    uncover 2
+    itxn_field Sender
+    itxn_field Receiver
+    // smart_contracts/event_factory/contract.py:44
+    // amount=1_000_000,
+    int 1000000
+    itxn_field Amount
+    // smart_contracts/event_factory/contract.py:43
+    // itxn.Payment(
+    int pay
+    itxn_field TypeEnum
+    // smart_contracts/event_factory/contract.py:47
+    // fee=0
+    int 0
+    itxn_field Fee
+    // smart_contracts/event_factory/contract.py:43-48
+    // itxn.Payment(
+    //     amount=1_000_000,
+    //     receiver=response.created_app.address,
+    //     sender=app_addr,
+    //     fee=0
+    // ).submit()
+    itxn_submit
+    // smart_contracts/event_factory/contract.py:49
+    // log("Transfered 0.1 Algos to", response.created_app.address,sep=" ")
+    dup
+    app_params_get AppAddress
+    assert // application exists
+    byte "Transfered 0.1 Algos to "
+    swap
+    concat
+    log
+    // smart_contracts/event_factory/contract.py:50
+    // self.add_event_manager_boxes(response.created_app.id, Txn.sender)
+    dup
+    txn Sender
+    callsub add_event_manager_boxes
+    // smart_contracts/event_factory/contract.py:51
+    // self.last_event_manager += 1
+    int 0
+    byte "last_event_manager"
+    app_global_get_ex
+    assert // check last_event_manager exists
+    int 1
+    +
+    byte "last_event_manager"
+    swap
+    app_global_put
+    // smart_contracts/event_factory/contract.py:52
+    // return response.created_app.id
+    retsub
+
+
+// smart_contracts.event_factory.contract.security_checks(txn_number: uint64) -> void:
+security_checks:
+    // smart_contracts/event_factory/contract.py:74-78
+    // ######################
+    // # Global subroutines #
+    // ######################
+    // @subroutine
+    // def security_checks(txn_number: UInt64) -> None:
+    proto 1 0
+    // smart_contracts/event_factory/contract.py:79
+    // assert Global.group_size == txn_number, "Wrong group size"
+    global GroupSize
+    frame_dig -1
+    ==
+    assert // Wrong group size
+    // smart_contracts/event_factory/contract.py:80
+    // assert Txn.rekey_to == Global.zero_address, "Wrong rekey to"
+    txn RekeyTo
+    global ZeroAddress
+    ==
+    assert // Wrong rekey to
+    retsub
+
+
+// smart_contracts.event_factory.contract.EventFactory.add_event_manager_boxes(app_id: uint64, creator: bytes) -> void:
+add_event_manager_boxes:
+    // smart_contracts/event_factory/contract.py:66-68
+    // # boxes
+    // @subroutine
+    // def add_event_manager_boxes(self, app_id: UInt64, creator: Account) -> None:
+    proto 2 0
+    // smart_contracts/event_factory/contract.py:69
+    // key_event = self.box_key_from_uint64(Bytes(EVENT_MANAGER_BOX_PREFIX), self.last_event_manager)
+    int 0
+    byte "last_event_manager"
+    app_global_get_ex
+    assert // check last_event_manager exists
+    byte "em-"
+    swap
+    callsub box_key_from_uint64
+    // smart_contracts/event_factory/contract.py:70
+    // key_creator = self.box_key_from_uint64(Bytes(EVENT_MANAGER_CREATOR_BOX_PREFIX), self.last_event_manager)
+    int 0
+    byte "last_event_manager"
+    app_global_get_ex
+    assert // check last_event_manager exists
+    byte "ce-"
+    swap
+    callsub box_key_from_uint64
+    // smart_contracts/event_factory/contract.py:71
+    // op.Box.put(key_event, op.itob(app_id))
+    frame_dig -2
+    itob
+    uncover 2
+    swap
+    box_put
+    // smart_contracts/event_factory/contract.py:72
+    // op.Box.put(key_creator, creator.bytes)
+    frame_dig -1
+    box_put
+    retsub
+
+
+// smart_contracts.event_factory.contract.EventFactory.box_key_from_uint64(prefix: bytes, index: uint64) -> bytes:
+box_key_from_uint64:
+    // smart_contracts/event_factory/contract.py:54-59
+    // ################
+    // # Box handlers #
+    // ################
+    // # general
+    // @subroutine
+    // def box_key_from_uint64(self, prefix: Bytes, index: UInt64) -> Bytes:
+    proto 2 1
+    // smart_contracts/event_factory/contract.py:60
+    // return op.concat(prefix, op.itob(index))
+    frame_dig -1
+    itob
+    frame_dig -2
+    swap
+    concat
+    retsub
+
+
+// smart_contracts.event_factory.contract.EventFactory.__init__() -> void:
+__init__:
+    // smart_contracts/event_factory/contract.py:23
+    // def __init__(self) -> None:
+    proto 0 0
+    // smart_contracts/event_factory/contract.py:24
+    // self.last_event_manager = UInt64(0)
+    byte "last_event_manager"
+    int 0
+    app_global_put
+    // smart_contracts/event_factory/contract.py:25
+    // log(FACTORY_APP_CREATED)
+    byte "Event Factory created"
+    log
+    retsub

@@ -1,0 +1,1618 @@
+#pragma version 10
+
+smart_contracts.event_manager.contract.EventManager.approval_program:
+    txn ApplicationID
+    bnz main_entrypoint@2
+    callsub __init__
+
+main_entrypoint@2:
+    // smart_contracts/event_manager/contract.py:92
+    // class EventManager(ARC4Contract):
+    txn NumAppArgs
+    bz main_bare_routing@8
+    method "start_event(string,account,uint64,uint64,string[],byte[32][],uint64[],uint64[],uint64[],uint64[],pay)void"
+    method "buy_ticket(account,uint64,uint64,byte[32][],pay)void"
+    txna ApplicationArgs 0
+    match main_start_event_route@4 main_buy_ticket_route@5
+    err // reject transaction
+
+main_start_event_route@4:
+    // smart_contracts/event_manager/contract.py:102
+    // @arc4.abimethod
+    txn OnCompletion
+    !
+    assert // OnCompletion is NoOp
+    txn ApplicationID
+    assert // is not creating
+    // smart_contracts/event_manager/contract.py:92
+    // class EventManager(ARC4Contract):
+    txna ApplicationArgs 1
+    extract 2 0
+    txna ApplicationArgs 2
+    btoi
+    txnas Accounts
+    txna ApplicationArgs 3
+    btoi
+    txna ApplicationArgs 4
+    btoi
+    txna ApplicationArgs 5
+    txna ApplicationArgs 6
+    txna ApplicationArgs 7
+    txna ApplicationArgs 8
+    txna ApplicationArgs 9
+    txna ApplicationArgs 10
+    txn GroupIndex
+    int 1
+    -
+    dup
+    gtxns TypeEnum
+    int pay
+    ==
+    assert // transaction type is pay
+    // smart_contracts/event_manager/contract.py:102
+    // @arc4.abimethod
+    callsub start_event
+    int 1
+    return
+
+main_buy_ticket_route@5:
+    // smart_contracts/event_manager/contract.py:148
+    // @arc4.abimethod
+    txn OnCompletion
+    !
+    assert // OnCompletion is NoOp
+    txn ApplicationID
+    assert // is not creating
+    // smart_contracts/event_manager/contract.py:92
+    // class EventManager(ARC4Contract):
+    txna ApplicationArgs 1
+    btoi
+    txnas Accounts
+    txna ApplicationArgs 2
+    btoi
+    txna ApplicationArgs 3
+    btoi
+    txna ApplicationArgs 4
+    txn GroupIndex
+    int 1
+    -
+    dup
+    gtxns TypeEnum
+    int pay
+    ==
+    assert // transaction type is pay
+    // smart_contracts/event_manager/contract.py:148
+    // @arc4.abimethod
+    callsub buy_ticket
+    int 1
+    return
+
+main_bare_routing@8:
+    // smart_contracts/event_manager/contract.py:92
+    // class EventManager(ARC4Contract):
+    txn OnCompletion
+    !
+    assert // reject transaction
+    txn ApplicationID
+    !
+    assert // is creating
+    int 1
+    return
+
+
+// smart_contracts.event_manager.contract.EventManager.start_event(name: bytes, owner: bytes, begin_ts: uint64, end_ts: uint64, tt_urls: bytes, tt_hash: bytes, tt_prices: bytes, tt_supply: bytes, tt_max_per_user: bytes, tt_sold_amount: bytes, pay: uint64) -> void:
+start_event:
+    // smart_contracts/event_manager/contract.py:102-116
+    // @arc4.abimethod
+    // def start_event(
+    //     self,
+    //     name: String,
+    //     owner: Account,
+    //     begin_ts: UInt64,
+    //     end_ts: UInt64,
+    //     tt_urls: arc4.DynamicArray[arc4.String],
+    //     tt_hash: arc4.DynamicArray[arc4.StaticArray[arc4.Byte, L[32]]],
+    //     tt_prices: arc4.DynamicArray[arc4.UInt64],
+    //     tt_supply: arc4.DynamicArray[arc4.UInt64],
+    //     tt_max_per_user: arc4.DynamicArray[arc4.UInt64],
+    //     tt_sold_amount: arc4.DynamicArray[arc4.UInt64],
+    //     pay: gtxn.PaymentTransaction,
+    // ) -> None:
+    proto 11 0
+    byte ""
+    // smart_contracts/event_manager/contract.py:117
+    // security_checks(UInt64(2))
+    int 2
+    callsub security_checks
+    // smart_contracts/event_manager/contract.py:118
+    // app_addr = Global.current_application_address
+    global CurrentApplicationAddress
+    // smart_contracts/event_manager/contract.py:119
+    // assert pay.receiver == app_addr, WRONG_PAYMENT_RECEIVER
+    frame_dig -1
+    gtxns Receiver
+    dig 1
+    ==
+    assert // Wrong receiver in payment txn
+    // smart_contracts/event_manager/contract.py:120
+    // assert pay.rekey_to == Global.zero_address, WRONG_RE_KEY_TO
+    frame_dig -1
+    gtxns RekeyTo
+    global ZeroAddress
+    ==
+    assert // Wrong re key to, should be zero address
+    // smart_contracts/event_manager/contract.py:121
+    // pre_mbr = app_addr.min_balance
+    acct_params_get AcctMinBalance
+    assert // account funded
+    // smart_contracts/event_manager/contract.py:122
+    // assert self.event_status == UInt64(INIT), WRONG_STATUS_NOT_INIT
+    int 0
+    byte "event_status"
+    app_global_get_ex
+    assert // check event_status exists
+    !
+    assert // Status must be INIT
+    // smart_contracts/event_manager/contract.py:123
+    // assert owner != Global.zero_address, ZERO_ADDRESS_ERROR
+    frame_dig -10
+    global ZeroAddress
+    !=
+    assert // Zero Address not allowed
+    // smart_contracts/event_manager/contract.py:124
+    // self.event_owner.value = owner
+    byte "event_owner"
+    frame_dig -10
+    app_global_put
+    // smart_contracts/event_manager/contract.py:125
+    // current_ts = Global.latest_timestamp
+    global LatestTimestamp
+    // smart_contracts/event_manager/contract.py:126
+    // assert begin_ts > (current_ts + MIN_AHEAD_TIME), WRONG_BEGIN_TIMESTAMP
+    int 43200
+    +
+    frame_dig -9
+    <
+    assert // Wrong begin timestamp should be at least 43200s in the future
+    // smart_contracts/event_manager/contract.py:127
+    // assert end_ts > (begin_ts + MIN_DURATION), WRONG_END_TIMESTAMP
+    frame_dig -9
+    int 86400
+    +
+    frame_dig -8
+    <
+    assert // Wrong end timestamp should be at least 86400s after begin timestamp
+    // smart_contracts/event_manager/contract.py:128
+    // self.event_begin.value = begin_ts
+    byte "event_begin"
+    frame_dig -9
+    app_global_put
+    // smart_contracts/event_manager/contract.py:129
+    // self.event_end.value = end_ts
+    byte "event_end"
+    frame_dig -8
+    app_global_put
+    // smart_contracts/event_manager/contract.py:130
+    // for i in urange(tt_urls.length):
+    frame_dig -7
+    int 0
+    extract_uint16
+    int 0
+
+start_event_for_header@1:
+    // smart_contracts/event_manager/contract.py:130
+    // for i in urange(tt_urls.length):
+    frame_dig 3
+    frame_dig 2
+    <
+    dup
+    frame_bury 0
+    bz start_event_after_for@5
+    // smart_contracts/event_manager/contract.py:132
+    // url=tt_urls[i],
+    frame_dig -7
+    extract 2 0
+    frame_dig 0
+    assert // Index access is out of bounds
+    frame_dig 3
+    dup
+    cover 2
+    int 2
+    *
+    dig 1
+    swap
+    extract_uint16
+    dup2
+    extract_uint16
+    int 2
+    +
+    extract3
+    swap
+    // smart_contracts/event_manager/contract.py:133
+    // metadata_hash=tt_hash[i].copy(),
+    frame_dig -6
+    extract 2 0
+    dig 1
+    int 32
+    *
+    int 32
+    extract3 // on error: Index access is out of bounds
+    swap
+    // smart_contracts/event_manager/contract.py:134
+    // price=tt_prices[i],
+    frame_dig -5
+    extract 2 0
+    dig 1
+    int 8
+    *
+    dup
+    cover 2
+    int 8
+    extract3 // on error: Index access is out of bounds
+    swap
+    // smart_contracts/event_manager/contract.py:135
+    // supply=tt_supply[i],
+    frame_dig -4
+    extract 2 0
+    dig 1
+    int 8
+    extract3 // on error: Index access is out of bounds
+    swap
+    // smart_contracts/event_manager/contract.py:136
+    // max_per_user=tt_max_per_user[i],
+    frame_dig -3
+    extract 2 0
+    dig 1
+    int 8
+    extract3 // on error: Index access is out of bounds
+    swap
+    // smart_contracts/event_manager/contract.py:137
+    // sold_amount=tt_sold_amount[i],
+    frame_dig -2
+    extract 2 0
+    swap
+    int 8
+    extract3 // on error: Index access is out of bounds
+    // smart_contracts/event_manager/contract.py:131-138
+    // tt = TicketsType(
+    //     url=tt_urls[i],
+    //     metadata_hash=tt_hash[i].copy(),
+    //     price=tt_prices[i],
+    //     supply=tt_supply[i],
+    //     max_per_user=tt_max_per_user[i],
+    //     sold_amount=tt_sold_amount[i],
+    // )
+    byte 0x0042
+    uncover 6
+    concat
+    uncover 4
+    concat
+    uncover 3
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    uncover 2
+    concat
+    // smart_contracts/event_manager/contract.py:139
+    // self.create_ticket_type_box(i, tt)
+    dig 1
+    swap
+    callsub create_ticket_type_box
+    pop
+    // smart_contracts/event_manager/contract.py:130
+    // for i in urange(tt_urls.length):
+    int 1
+    +
+    frame_bury 3
+    b start_event_for_header@1
+
+start_event_after_for@5:
+    // smart_contracts/event_manager/contract.py:140
+    // self.name = name
+    byte "name"
+    frame_dig -11
+    app_global_put
+    // smart_contracts/event_manager/contract.py:141
+    // self.last_type_index += tt_urls.length
+    int 0
+    byte "last_type_index"
+    app_global_get_ex
+    assert // check last_type_index exists
+    frame_dig 2
+    +
+    byte "last_type_index"
+    swap
+    app_global_put
+    // smart_contracts/event_manager/contract.py:142
+    // self.update_to(UInt64(STARTED))
+    int 1
+    callsub update_to
+    // smart_contracts/event_manager/contract.py:143
+    // post_mbr = Global.current_application_address.min_balance
+    global CurrentApplicationAddress
+    acct_params_get AcctMinBalance
+    assert // account funded
+    // smart_contracts/event_manager/contract.py:144
+    // pay_amount = post_mbr - pre_mbr
+    frame_dig 1
+    -
+    // smart_contracts/event_manager/contract.py:145
+    // assert pay.amount == pay_amount, WRONG_PAYMENT_AMOUNT
+    frame_dig -1
+    gtxns Amount
+    ==
+    assert // Wrong amount payment
+    // smart_contracts/event_manager/contract.py:146
+    // log(APP_STARTED)
+    byte "[EVENT MANAGER] Started"
+    log
+    retsub
+
+
+// smart_contracts.event_manager.contract.security_checks(txn_number: uint64) -> void:
+security_checks:
+    // smart_contracts/event_manager/contract.py:436-440
+    // ######################
+    // # Global subroutines #
+    // ######################
+    // @subroutine
+    // def security_checks(txn_number: UInt64) -> None:
+    proto 1 0
+    // smart_contracts/event_manager/contract.py:441
+    // assert Global.group_size == txn_number, WRONG_GROUP_SIZE
+    global GroupSize
+    frame_dig -1
+    ==
+    assert // Wrong group size
+    // smart_contracts/event_manager/contract.py:442
+    // assert Txn.rekey_to == Global.zero_address, WRONG_RE_KEY_TO
+    txn RekeyTo
+    global ZeroAddress
+    ==
+    assert // Wrong re key to, should be zero address
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.create_ticket_type_box(index: uint64, tt: bytes) -> bytes:
+create_ticket_type_box:
+    // smart_contracts/event_manager/contract.py:260-262
+    // # ticket types
+    // @subroutine
+    // def create_ticket_type_box(self, index: UInt64, tt: TicketsType) -> None:
+    proto 2 1
+    // smart_contracts/event_manager/contract.py:263
+    // key = self.box_key_from_uint64(Bytes(TICKET_TYPES_BOX_PREFIX), index)
+    byte "tt-"
+    frame_dig -2
+    callsub box_key_from_uint64
+    // smart_contracts/event_manager/contract.py:264
+    // op.Box.put(key, tt.bytes)
+    frame_dig -1
+    box_put
+    frame_dig -1
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.box_key_from_uint64(prefix: bytes, index: uint64) -> bytes:
+box_key_from_uint64:
+    // smart_contracts/event_manager/contract.py:248-253
+    // ###################
+    // # box subroutines #
+    // ###################
+    // # general
+    // @subroutine
+    // def box_key_from_uint64(self, prefix: Bytes, index: UInt64) -> Bytes:
+    proto 2 1
+    // smart_contracts/event_manager/contract.py:254
+    // return op.concat(prefix, op.itob(index))
+    frame_dig -1
+    itob
+    frame_dig -2
+    swap
+    concat
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.update_to(new_status: uint64) -> void:
+update_to:
+    // smart_contracts/event_manager/contract.py:232-233
+    // @subroutine
+    // def update_to(self, new_status: UInt64) -> None:
+    proto 1 0
+    // smart_contracts/event_manager/contract.py:234
+    // old_status = self.event_status
+    int 0
+    byte "event_status"
+    app_global_get_ex
+    swap
+    dup
+    uncover 2
+    assert // check event_status exists
+    // smart_contracts/event_manager/contract.py:235
+    // if old_status != new_status:
+    frame_dig -1
+    !=
+    bz update_to_after_if_else@2
+    // smart_contracts/event_manager/contract.py:236
+    // self.event_status = new_status
+    byte "event_status"
+    frame_dig -1
+    app_global_put
+    // smart_contracts/event_manager/contract.py:237
+    // log(APP_STATUS_UPDATE, old_status, "to", new_status, sep=" ")
+    frame_dig 0
+    itob
+    byte "[EVENT MANGER] Status Updated from "
+    swap
+    concat
+    byte " "
+    concat
+    byte "to"
+    concat
+    byte " "
+    concat
+    frame_dig -1
+    itob
+    concat
+    log
+
+update_to_after_if_else@2:
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.buy_ticket(owner: bytes, number_tickets: uint64, ticket_type_index: uint64, seats: bytes, pay: uint64) -> void:
+buy_ticket:
+    // smart_contracts/event_manager/contract.py:148-156
+    // @arc4.abimethod
+    // def buy_ticket(
+    //     self,
+    //     owner: Account,
+    //     number_tickets: UInt64,
+    //     ticket_type_index: UInt64,
+    //     seats: SeatsArray,
+    //     pay: gtxn.PaymentTransaction,
+    // ) -> None:
+    proto 5 0
+    int 0
+    dupn 2
+    byte ""
+    // smart_contracts/event_manager/contract.py:157-158
+    // # checks
+    // security_checks(UInt64(2))
+    int 2
+    callsub security_checks
+    // smart_contracts/event_manager/contract.py:159
+    // self.check_status_not_ended()
+    callsub check_status_not_ended
+    // smart_contracts/event_manager/contract.py:160
+    // app_addr = Global.current_application_address
+    global CurrentApplicationAddress
+    // smart_contracts/event_manager/contract.py:161
+    // assert pay.receiver == app_addr, WRONG_PAYMENT_RECEIVER
+    frame_dig -1
+    gtxns Receiver
+    dig 1
+    ==
+    assert // Wrong receiver in payment txn
+    // smart_contracts/event_manager/contract.py:162
+    // assert pay.rekey_to == Global.zero_address, WRONG_RE_KEY_TO
+    frame_dig -1
+    gtxns RekeyTo
+    global ZeroAddress
+    ==
+    assert // Wrong re key to, should be zero address
+    // smart_contracts/event_manager/contract.py:163
+    // pre_mbr = app_addr.min_balance
+    acct_params_get AcctMinBalance
+    assert // account funded
+    // smart_contracts/event_manager/contract.py:166
+    // Bytes(TICKET_TYPES_BOX_PREFIX), ticket_type_index
+    byte "tt-"
+    // smart_contracts/event_manager/contract.py:164-167
+    // # retrieve ticket type
+    // tt_key = self.box_key_from_uint64(
+    //     Bytes(TICKET_TYPES_BOX_PREFIX), ticket_type_index
+    // )
+    frame_dig -3
+    callsub box_key_from_uint64
+    dup
+    // smart_contracts/event_manager/contract.py:168
+    // tt = self.read_ticket_type_box(tt_key)
+    callsub read_ticket_type_box
+    dup
+    // smart_contracts/event_manager/contract.py:171
+    // number_tickets == seats.length
+    frame_dig -2
+    int 0
+    extract_uint16
+    frame_dig -4
+    ==
+    // smart_contracts/event_manager/contract.py:169-172
+    // # length match
+    // assert (
+    //     number_tickets == seats.length
+    // ), "number of tickets must equal to seats array length"
+    assert // number of tickets must equal to seats array length
+    // smart_contracts/event_manager/contract.py:173-174
+    // # no over supply
+    // supply = tt.supply.native
+    dup
+    extract 42 8 // on error: Index access is out of bounds
+    btoi
+    swap
+    // smart_contracts/event_manager/contract.py:175
+    // sold = tt.sold_amount.native
+    extract 58 8 // on error: Index access is out of bounds
+    btoi
+    // smart_contracts/event_manager/contract.py:176
+    // assert sold + number_tickets <= supply, OVER_SUPPLY
+    frame_dig -4
+    +
+    dup
+    uncover 2
+    <=
+    assert // Cannot buy that amount of tickets: over supply
+    // smart_contracts/event_manager/contract.py:177-179
+    // # ensure ops
+    // # budget approx => [fixed cost 600] + [variable cost 200] * tickets
+    // budget_approx = (sold + number_tickets) * 200 + 600
+    int 200
+    *
+    int 600
+    +
+    // smart_contracts/event_manager/contract.py:180
+    // ensure_budget(budget_approx, fee_source=OpUpFeeSource.GroupCredit)
+    int 0
+    callsub ensure_budget
+    // smart_contracts/event_manager/contract.py:181-182
+    // # no over max per user
+    // ob_key = self.box_key_from_address(Bytes(OWNER_BOX_PREFIX), owner)
+    byte "ot-"
+    frame_dig -5
+    callsub box_key_from_address
+    dupn 2
+    // smart_contracts/event_manager/contract.py:183
+    // ob_res = self.read_owner_box(ob_key)
+    callsub read_owner_box
+    pop
+    swap
+    // smart_contracts/event_manager/contract.py:185
+    // if ob_key[1] == Bytes(b"1"):
+    extract 1 1
+    byte "1"
+    ==
+    frame_dig -4
+    swap
+    bz buy_ticket_after_if_else@2
+    // smart_contracts/event_manager/contract.py:186
+    // count += ob_res[0].bought_tickets[ticket_type_index].native
+    frame_dig 8
+    dup
+    int 4
+    extract_uint16
+    swap
+    dup
+    len
+    swap
+    uncover 2
+    uncover 2
+    substring3
+    extract 2 0
+    frame_dig -3
+    int 8
+    *
+    int 8
+    extract3 // on error: Index access is out of bounds
+    btoi
+    frame_dig -4
+    +
+    frame_bury 9
+
+buy_ticket_after_if_else@2:
+    // smart_contracts/event_manager/contract.py:187
+    // assert count <= tt.max_per_user, OVER_MAX_PER_USER
+    frame_dig 6
+    extract 50 8 // on error: Index access is out of bounds
+    frame_dig 9
+    itob
+    b>=
+    assert // Cannot buy that amount of tickets: over max per user
+    // smart_contracts/event_manager/contract.py:188-189
+    // # seat not taken
+    // s_key = self.box_key_from_uint64(Bytes(SEATS_BOX_PREFIX), ticket_type_index)
+    byte "sb-"
+    frame_dig -3
+    callsub box_key_from_uint64
+    dup
+    frame_bury 2
+    // smart_contracts/event_manager/contract.py:190
+    // is_taken = self.seats_contains(s_key, seats)
+    frame_dig -2
+    callsub seats_contains
+    frame_bury -2
+    // smart_contracts/event_manager/contract.py:191
+    // assert is_taken == False, SEAT_TAKEN
+    !
+    assert // Unavailable seat
+    // smart_contracts/event_manager/contract.py:192-194
+    // # proceed to sell tickets
+    // # create asas
+    // ab_key = self.box_key_from_uint64(Bytes(ASSETS_BOX_PREFIX), ticket_type_index)
+    byte "ab-"
+    frame_dig -3
+    callsub box_key_from_uint64
+    frame_bury 0
+    // smart_contracts/event_manager/contract.py:195
+    // assets = AssetsArray()
+    byte 0x0000
+    frame_bury 1
+    // smart_contracts/event_manager/contract.py:196
+    // for i in urange(number_tickets):
+    int 0
+    frame_bury 3
+
+buy_ticket_for_header@3:
+    // smart_contracts/event_manager/contract.py:196
+    // for i in urange(number_tickets):
+    frame_dig 3
+    frame_dig -4
+    <
+    bz buy_ticket_after_for@7
+    // smart_contracts/event_manager/contract.py:197
+    // seat = seats[i].copy()
+    frame_dig -2
+    extract 2 0
+    frame_dig 3
+    dup
+    cover 2
+    int 32
+    *
+    int 32
+    extract3 // on error: Index access is out of bounds
+    // smart_contracts/event_manager/contract.py:199
+    // tt.url.native, tt.metadata_hash.copy(), seat
+    frame_dig 6
+    dup
+    int 0
+    extract_uint16
+    swap
+    dup
+    len
+    swap
+    dup
+    uncover 3
+    uncover 3
+    substring3
+    extract 2 0
+    swap
+    extract 2 32 // on error: Index access is out of bounds
+    // smart_contracts/event_manager/contract.py:198-200
+    // asset_id = self.execute_asset_creation_txn(
+    //     tt.url.native, tt.metadata_hash.copy(), seat
+    // )
+    uncover 2
+    callsub execute_asset_creation_txn
+    popn 2
+    // smart_contracts/event_manager/contract.py:201-202
+    // # append to box
+    // assets.append(arc4.UInt64(asset_id))
+    frame_dig 1
+    extract 2 0
+    swap
+    itob
+    concat
+    dup
+    len
+    int 8
+    /
+    itob
+    extract 6 0
+    swap
+    concat
+    frame_bury 1
+    // smart_contracts/event_manager/contract.py:196
+    // for i in urange(number_tickets):
+    int 1
+    +
+    frame_bury 3
+    b buy_ticket_for_header@3
+
+buy_ticket_after_for@7:
+    // smart_contracts/event_manager/contract.py:203-204
+    // # append to assets box
+    // self.append_assets_to_box(ab_key, assets)
+    frame_dig 0
+    frame_dig 1
+    callsub append_assets_to_box
+    // smart_contracts/event_manager/contract.py:205-206
+    // # append to seats box
+    // self.append_seats_box(s_key, seats)
+    frame_dig 2
+    frame_dig -2
+    callsub append_seats_box
+    frame_bury -2
+    // smart_contracts/event_manager/contract.py:207-209
+    // # append to user box
+    // # please use "fix-arc4-dynamic-element-read" branch from puy_api github repo
+    // self.update_owner_box(ob_key, ticket_type_index, seats, assets)
+    frame_dig 7
+    frame_dig -3
+    frame_dig -2
+    uncover 3
+    callsub update_owner_box
+    pop
+    frame_bury -2
+    // smart_contracts/event_manager/contract.py:210-211
+    // # update tickets sold
+    // self.update_sold_tickets(tt_key, tt, number_tickets)
+    frame_dig 5
+    frame_dig 6
+    frame_dig -4
+    callsub update_sold_tickets
+    // smart_contracts/event_manager/contract.py:212-213
+    // # ensure amount and mbr
+    // post_mbr = Global.current_application_address.min_balance
+    global CurrentApplicationAddress
+    acct_params_get AcctMinBalance
+    swap
+    cover 2
+    assert // account funded
+    // smart_contracts/event_manager/contract.py:214
+    // seats_cost = number_tickets * tt.price.native
+    extract 34 8 // on error: Index access is out of bounds
+    btoi
+    frame_dig -4
+    *
+    // smart_contracts/event_manager/contract.py:215
+    // pay_amount = post_mbr - pre_mbr + seats_cost
+    swap
+    frame_dig 4
+    -
+    +
+    // smart_contracts/event_manager/contract.py:216
+    // assert pay.amount >= pay_amount, WRONG_PAYMENT_AMOUNT
+    frame_dig -1
+    gtxns Amount
+    <=
+    assert // Wrong amount payment
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.check_status_not_ended() -> void:
+check_status_not_ended:
+    // smart_contracts/event_manager/contract.py:243-244
+    // @subroutine
+    // def check_status_not_ended(self) -> None:
+    proto 0 0
+    // smart_contracts/event_manager/contract.py:245
+    // self.updateStatus()
+    callsub updateStatus
+    // smart_contracts/event_manager/contract.py:246
+    // assert self.event_status != UInt64(ENDED), EVENT_ENDED
+    int 0
+    byte "event_status"
+    app_global_get_ex
+    assert // check event_status exists
+    int 3
+    !=
+    assert // Event Ended
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.updateStatus() -> void:
+updateStatus:
+    // smart_contracts/event_manager/contract.py:218-222
+    // #######################
+    // # status subroutines  #
+    // #######################
+    // @subroutine
+    // def updateStatus(self) -> None:
+    proto 0 0
+    // smart_contracts/event_manager/contract.py:223
+    // now = Global.latest_timestamp
+    global LatestTimestamp
+    dup
+    // smart_contracts/event_manager/contract.py:224
+    // if now > self.event_end.value:
+    int 0
+    byte "event_end"
+    app_global_get_ex
+    assert // check event_end exists
+    >
+    bz updateStatus_after_if_else@2
+    // smart_contracts/event_manager/contract.py:225
+    // self.update_to(UInt64(ENDED))
+    int 3
+    callsub update_to
+    // smart_contracts/event_manager/contract.py:226
+    // return
+    retsub
+
+updateStatus_after_if_else@2:
+    // smart_contracts/event_manager/contract.py:228
+    // if now >= self.event_begin.value:
+    int 0
+    byte "event_begin"
+    app_global_get_ex
+    assert // check event_begin exists
+    frame_dig 0
+    <=
+    bz updateStatus_after_if_else@4
+    // smart_contracts/event_manager/contract.py:229
+    // self.update_to(UInt64(ON_GOING))
+    int 2
+    callsub update_to
+    // smart_contracts/event_manager/contract.py:230
+    // return
+    retsub
+
+updateStatus_after_if_else@4:
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.read_ticket_type_box(key: bytes) -> bytes:
+read_ticket_type_box:
+    // smart_contracts/event_manager/contract.py:266-267
+    // @subroutine
+    // def read_ticket_type_box(self, key: Bytes) -> TicketsType:
+    proto 1 1
+    // smart_contracts/event_manager/contract.py:268
+    // b_value = op.Box.get(key)
+    frame_dig -1
+    box_get
+    // smart_contracts/event_manager/contract.py:269
+    // assert b_value[1] == True, BOX_GET_ERROR
+    int 1
+    ==
+    assert // Failed to get box, doesn't exist
+    // smart_contracts/event_manager/contract.py:271
+    // return value
+    retsub
+
+
+// algopy.ensure_budget(required_budget: uint64, fee_source: uint64) -> void:
+ensure_budget:
+    // <algopy>/algopy.py:11-17
+    proto 2 0
+    // <algopy>/algopy.py:18
+    frame_dig -2
+    int 10
+    +
+
+ensure_budget_while_top@1:
+    // <algopy>/algopy.py:19
+    frame_dig 0
+    global OpcodeBudget
+    >
+    bz ensure_budget_after_while@7
+    // <algopy>/algopy.py:20
+    itxn_begin
+    // <algopy>/algopy.py:21
+    int appl
+    itxn_field TypeEnum
+    // <algopy>/algopy.py:22
+    int DeleteApplication
+    itxn_field OnCompletion
+    // <algopy>/algopy.py:23
+    byte 0x068101
+    itxn_field ApprovalProgram
+    // <algopy>/algopy.py:24
+    byte 0x068101
+    itxn_field ClearStateProgram
+    // <algopy>/algopy.py:25-29
+    frame_dig -1
+    switch ensure_budget_switch_case_0@3 ensure_budget_switch_case_1@4
+    b ensure_budget_switch_case_next@6
+
+ensure_budget_switch_case_0@3:
+    // <algopy>/algopy.py:27
+    int 0
+    itxn_field Fee
+    b ensure_budget_switch_case_next@6
+
+ensure_budget_switch_case_1@4:
+    // <algopy>/algopy.py:29
+    global MinTxnFee
+    itxn_field Fee
+
+ensure_budget_switch_case_next@6:
+    // <algopy>/algopy.py:30
+    itxn_submit
+    b ensure_budget_while_top@1
+
+ensure_budget_after_while@7:
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.box_key_from_address(prefix: bytes, acc: bytes) -> bytes:
+box_key_from_address:
+    // smart_contracts/event_manager/contract.py:256-257
+    // @subroutine
+    // def box_key_from_address(self, prefix: Bytes, acc: Account) -> Bytes:
+    proto 2 1
+    // smart_contracts/event_manager/contract.py:258
+    // return op.concat(prefix, acc.bytes)
+    frame_dig -2
+    frame_dig -1
+    concat
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.read_owner_box(key: bytes) -> bytes, uint64:
+read_owner_box:
+    // smart_contracts/event_manager/contract.py:288-289
+    // @subroutine
+    // def read_owner_box(self, key: Bytes) -> tuple[OwnerBox, bool]:
+    proto 1 2
+    // smart_contracts/event_manager/contract.py:290
+    // b_value = op.Box.get(key)
+    frame_dig -1
+    box_get
+    // smart_contracts/event_manager/contract.py:293
+    // return (value.copy(), b_value[1])
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.seats_contains(key: bytes, ref_seats: bytes) -> uint64, bytes:
+seats_contains:
+    // smart_contracts/event_manager/contract.py:368-369
+    // @subroutine
+    // def seats_contains(self, key: Bytes, ref_seats: SeatsArray) -> bool:
+    proto 2 2
+    int 0
+    byte ""
+    dupn 3
+    // smart_contracts/event_manager/contract.py:370
+    // r_seats = op.Box.get(key)
+    frame_dig -2
+    box_get
+    // smart_contracts/event_manager/contract.py:371
+    // if r_seats[1] == False:
+    bnz seats_contains_after_if_else@2
+    // smart_contracts/event_manager/contract.py:372
+    // return False
+    int 0
+    frame_dig -1
+    frame_bury 1
+    frame_bury 0
+    retsub
+
+seats_contains_after_if_else@2:
+    // smart_contracts/event_manager/contract.py:374
+    // for i in urange(value.length):
+    frame_dig 5
+    int 0
+    extract_uint16
+    frame_bury 3
+    int 0
+    frame_bury 1
+
+seats_contains_for_header@3:
+    // smart_contracts/event_manager/contract.py:374
+    // for i in urange(value.length):
+    frame_dig 1
+    frame_dig 3
+    <
+    bz seats_contains_after_for@14
+    // smart_contracts/event_manager/contract.py:375
+    // s = value[i].copy()
+    frame_dig 5
+    extract 2 0
+    frame_dig 1
+    int 32
+    *
+    int 32
+    extract3 // on error: Index access is out of bounds
+    frame_bury 0
+    // smart_contracts/event_manager/contract.py:376
+    // for j in urange(ref_seats.length):
+    frame_dig -1
+    int 0
+    extract_uint16
+    frame_bury 4
+    int 0
+    frame_bury 2
+
+seats_contains_for_header@5:
+    // smart_contracts/event_manager/contract.py:376
+    // for j in urange(ref_seats.length):
+    frame_dig 2
+    frame_dig 4
+    <
+    bz seats_contains_after_for@11
+    // smart_contracts/event_manager/contract.py:377
+    // r_s = ref_seats[j].copy()
+    frame_dig -1
+    extract 2 0
+    frame_dig 2
+    int 32
+    *
+    int 32
+    extract3 // on error: Index access is out of bounds
+    // smart_contracts/event_manager/contract.py:378
+    // if s == r_s:
+    frame_dig 0
+    ==
+    bz seats_contains_after_if_else@8
+    // smart_contracts/event_manager/contract.py:379
+    // return True
+    int 1
+    frame_dig -1
+    frame_bury 1
+    frame_bury 0
+    retsub
+
+seats_contains_after_if_else@8:
+    // smart_contracts/event_manager/contract.py:376
+    // for j in urange(ref_seats.length):
+    frame_dig 2
+    int 1
+    +
+    frame_bury 2
+    b seats_contains_for_header@5
+
+seats_contains_after_for@11:
+    // smart_contracts/event_manager/contract.py:374
+    // for i in urange(value.length):
+    frame_dig 1
+    int 1
+    +
+    frame_bury 1
+    b seats_contains_for_header@3
+
+seats_contains_after_for@14:
+    // smart_contracts/event_manager/contract.py:380
+    // return False
+    int 0
+    frame_dig -1
+    frame_bury 1
+    frame_bury 0
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.execute_asset_creation_txn(uri: bytes, metadata_hash: bytes, seat_as_addr: bytes) -> uint64, bytes, bytes:
+execute_asset_creation_txn:
+    // smart_contracts/event_manager/contract.py:412-418
+    // ###################
+    // # Asa subroutines #
+    // ###################
+    // @subroutine
+    // def execute_asset_creation_txn(
+    //     self, uri: String, metadata_hash: Bytes32, seat_as_addr: Bytes32
+    // ) -> UInt64:
+    proto 3 3
+    // smart_contracts/event_manager/contract.py:419
+    // app_addr = Global.current_application_address
+    global CurrentApplicationAddress
+    // smart_contracts/event_manager/contract.py:420-432
+    // asset_itxn = itxn.AssetConfig(
+    //     asset_name=b"Event NFT",
+    //     unit_name=b"EVT-TCK",
+    //     total=1,
+    //     decimals=0,
+    //     manager=app_addr,
+    //     reserve=Account.from_bytes(seat_as_addr.bytes),
+    //     clawback=app_addr,
+    //     default_frozen=True,
+    //     url=uri,
+    //     metadata_hash=metadata_hash.bytes,
+    //     fee=0,
+    // ).submit()
+    itxn_begin
+    frame_dig -2
+    itxn_field ConfigAssetMetadataHash
+    frame_dig -3
+    itxn_field ConfigAssetURL
+    // smart_contracts/event_manager/contract.py:428
+    // default_frozen=True,
+    int 1
+    itxn_field ConfigAssetDefaultFrozen
+    dup
+    itxn_field ConfigAssetClawback
+    frame_dig -1
+    itxn_field ConfigAssetReserve
+    itxn_field ConfigAssetManager
+    // smart_contracts/event_manager/contract.py:424
+    // decimals=0,
+    int 0
+    itxn_field ConfigAssetDecimals
+    // smart_contracts/event_manager/contract.py:423
+    // total=1,
+    int 1
+    itxn_field ConfigAssetTotal
+    // smart_contracts/event_manager/contract.py:422
+    // unit_name=b"EVT-TCK",
+    byte "EVT-TCK"
+    itxn_field ConfigAssetUnitName
+    // smart_contracts/event_manager/contract.py:421
+    // asset_name=b"Event NFT",
+    byte "Event NFT"
+    itxn_field ConfigAssetName
+    // smart_contracts/event_manager/contract.py:420
+    // asset_itxn = itxn.AssetConfig(
+    int acfg
+    itxn_field TypeEnum
+    // smart_contracts/event_manager/contract.py:431
+    // fee=0,
+    int 0
+    itxn_field Fee
+    // smart_contracts/event_manager/contract.py:420-432
+    // asset_itxn = itxn.AssetConfig(
+    //     asset_name=b"Event NFT",
+    //     unit_name=b"EVT-TCK",
+    //     total=1,
+    //     decimals=0,
+    //     manager=app_addr,
+    //     reserve=Account.from_bytes(seat_as_addr.bytes),
+    //     clawback=app_addr,
+    //     default_frozen=True,
+    //     url=uri,
+    //     metadata_hash=metadata_hash.bytes,
+    //     fee=0,
+    // ).submit()
+    itxn_submit
+    itxn CreatedAssetID
+    // smart_contracts/event_manager/contract.py:433
+    // return asset_itxn.created_asset.id
+    frame_dig -2
+    frame_dig -1
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.append_assets_to_box(key: bytes, assets_ids: bytes) -> bytes:
+append_assets_to_box:
+    // smart_contracts/event_manager/contract.py:401-402
+    // @subroutine
+    // def append_assets_to_box(self, key: Bytes, assets_ids: AssetsArray) -> None:
+    proto 2 1
+    // smart_contracts/event_manager/contract.py:403
+    // b_assets = op.Box.get(key)
+    frame_dig -2
+    box_get
+    // smart_contracts/event_manager/contract.py:404
+    // if b_assets[1] == False:
+    bnz append_assets_to_box_else_body@2
+    // smart_contracts/event_manager/contract.py:405
+    // op.Box.put(key, assets_ids.bytes)
+    frame_dig -2
+    frame_dig -1
+    box_put
+    b append_assets_to_box_after_if_else@3
+
+append_assets_to_box_else_body@2:
+    // smart_contracts/event_manager/contract.py:408
+    // arr.extend(assets_ids)
+    frame_dig 0
+    extract 2 0
+    frame_dig -1
+    extract 2 0
+    concat
+    dup
+    len
+    int 8
+    /
+    itob
+    extract 6 0
+    swap
+    concat
+    // smart_contracts/event_manager/contract.py:409
+    // op.Box.delete(key)
+    frame_dig -2
+    box_del
+    pop
+    // smart_contracts/event_manager/contract.py:410
+    // op.Box.put(key, arr.bytes)
+    frame_dig -2
+    swap
+    box_put
+
+append_assets_to_box_after_if_else@3:
+    frame_dig -1
+    swap
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.append_seats_box(key: bytes, seats: bytes) -> bytes:
+append_seats_box:
+    // smart_contracts/event_manager/contract.py:356-357
+    // @subroutine
+    // def append_seats_box(self, key: Bytes, seats: SeatsArray) -> None:
+    proto 2 1
+    // smart_contracts/event_manager/contract.py:358
+    // b_seats = op.Box.get(key)
+    frame_dig -2
+    box_get
+    // smart_contracts/event_manager/contract.py:359
+    // if b_seats[1] == False:
+    bnz append_seats_box_else_body@2
+    // smart_contracts/event_manager/contract.py:360
+    // op.Box.put(key, seats.bytes)
+    frame_dig -2
+    frame_dig -1
+    box_put
+    b append_seats_box_after_if_else@3
+
+append_seats_box_else_body@2:
+    // smart_contracts/event_manager/contract.py:363
+    // arr.extend(seats)
+    frame_dig 0
+    extract 2 0
+    frame_dig -1
+    extract 2 0
+    concat
+    dup
+    len
+    int 32
+    /
+    itob
+    extract 6 0
+    swap
+    concat
+    // smart_contracts/event_manager/contract.py:364-365
+    // # TODO change to resize ???
+    // op.Box.delete(key)
+    frame_dig -2
+    box_del
+    pop
+    // smart_contracts/event_manager/contract.py:366
+    // op.Box.put(key, arr.bytes)
+    frame_dig -2
+    swap
+    box_put
+
+append_seats_box_after_if_else@3:
+    frame_dig -1
+    swap
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.update_owner_box(key: bytes, ticket_type_index: uint64, seats: bytes, assets_ids: bytes) -> bytes, bytes:
+update_owner_box:
+    // smart_contracts/event_manager/contract.py:300-307
+    // @subroutine
+    // def update_owner_box(
+    //     self,
+    //     key: Bytes,
+    //     ticket_type_index: UInt64,
+    //     seats: SeatsArray,
+    //     assets_ids: AssetsArray,
+    // ) -> None:
+    proto 4 2
+    int 0
+    byte ""
+    dup
+    // smart_contracts/event_manager/contract.py:308
+    // assert seats.length == assets_ids.length, "lengths must match"
+    frame_dig -2
+    int 0
+    extract_uint16
+    dup
+    frame_dig -1
+    int 0
+    extract_uint16
+    ==
+    assert // lengths must match
+    // smart_contracts/event_manager/contract.py:309
+    // b_owner = op.Box.get(key)
+    frame_dig -4
+    box_get
+    // smart_contracts/event_manager/contract.py:310
+    // if b_owner[1] == False:
+    bnz update_owner_box_else_body@7
+    // smart_contracts/event_manager/contract.py:311
+    // b_t = BoughtTicketsArray()
+    byte 0x0000
+    frame_bury 0
+    // smart_contracts/event_manager/contract.py:312-314
+    // # arc4.UInt64(0), arc4.UInt64(0), arc4.UInt64(0)
+    // # )
+    // for i in urange(self.last_type_index):
+    int 0
+    byte "last_type_index"
+    app_global_get_ex
+    swap
+    frame_bury 2
+    assert // check last_type_index exists
+    int 0
+    frame_bury 1
+
+update_owner_box_for_header@2:
+    // smart_contracts/event_manager/contract.py:312-314
+    // # arc4.UInt64(0), arc4.UInt64(0), arc4.UInt64(0)
+    // # )
+    // for i in urange(self.last_type_index):
+    frame_dig 1
+    frame_dig 2
+    <
+    bz update_owner_box_after_for@6
+    // smart_contracts/event_manager/contract.py:315
+    // b_t.append(arc4.UInt64(0))
+    frame_dig 0
+    extract 2 0
+    byte 0x0000000000000000
+    concat
+    dup
+    len
+    int 8
+    /
+    itob
+    extract 6 0
+    swap
+    concat
+    frame_bury 0
+    // smart_contracts/event_manager/contract.py:312-314
+    // # arc4.UInt64(0), arc4.UInt64(0), arc4.UInt64(0)
+    // # )
+    // for i in urange(self.last_type_index):
+    frame_dig 1
+    int 1
+    +
+    frame_bury 1
+    b update_owner_box_for_header@2
+
+update_owner_box_after_for@6:
+    // smart_contracts/event_manager/contract.py:316
+    // b_t[ticket_type_index] = arc4.UInt64(seats.length)
+    frame_dig 3
+    itob
+    frame_dig 0
+    dup
+    int 0
+    extract_uint16
+    frame_dig -3
+    >
+    assert // Index access is out of bounds
+    frame_dig -3
+    int 8
+    *
+    int 2
+    +
+    uncover 2
+    replace3
+    // smart_contracts/event_manager/contract.py:317
+    // _box = OwnerBox(seats=seats, assets=assets_ids, bought_tickets=b_t)
+    frame_dig -2
+    len
+    int 6
+    +
+    dup
+    itob
+    extract 6 2
+    byte 0x0006
+    swap
+    concat
+    swap
+    frame_dig -1
+    len
+    +
+    itob
+    extract 6 2
+    concat
+    frame_dig -2
+    concat
+    frame_dig -1
+    concat
+    swap
+    concat
+    // smart_contracts/event_manager/contract.py:318
+    // op.Box.put(key, _box.bytes)
+    frame_dig -4
+    swap
+    box_put
+    b update_owner_box_after_if_else@8
+
+update_owner_box_else_body@7:
+    // smart_contracts/event_manager/contract.py:321
+    // b_t = _box.bought_tickets.copy()
+    frame_dig 4
+    dup
+    int 4
+    extract_uint16
+    swap
+    dup
+    len
+    swap
+    dup
+    dig 3
+    uncover 3
+    substring3
+    // smart_contracts/event_manager/contract.py:322
+    // prev_b_t = b_t[ticket_type_index]
+    dup
+    extract 2 0
+    frame_dig -3
+    int 8
+    *
+    dup
+    cover 3
+    int 8
+    extract3 // on error: Index access is out of bounds
+    // smart_contracts/event_manager/contract.py:323
+    // b_t[ticket_type_index] = arc4.UInt64(seats.length + prev_b_t.native)
+    btoi
+    frame_dig 3
+    +
+    itob
+    dig 1
+    int 0
+    extract_uint16
+    frame_dig -3
+    >
+    assert // Index access is out of bounds
+    uncover 2
+    int 2
+    +
+    swap
+    replace3
+    cover 2
+    // smart_contracts/event_manager/contract.py:324
+    // _s = _box.seats.copy()
+    dup
+    int 0
+    extract_uint16
+    swap
+    dup
+    int 2
+    extract_uint16
+    dig 1
+    uncover 3
+    dig 2
+    substring3
+    // smart_contracts/event_manager/contract.py:325
+    // _s.extend(seats)
+    extract 2 0
+    frame_dig -2
+    extract 2 0
+    concat
+    dup
+    len
+    int 32
+    /
+    itob
+    extract 6 0
+    swap
+    concat
+    cover 2
+    // smart_contracts/event_manager/contract.py:326-328
+    // # _box.seats = _s.copy()
+    // # _box.seats.extend(seats)
+    // _a = _box.assets.copy()
+    uncover 3
+    substring3
+    // smart_contracts/event_manager/contract.py:329
+    // _a.extend(assets_ids)
+    extract 2 0
+    frame_dig -1
+    extract 2 0
+    concat
+    dup
+    len
+    int 8
+    /
+    itob
+    extract 6 0
+    swap
+    concat
+    // smart_contracts/event_manager/contract.py:330-333
+    // # _box.assets = _a.copy()
+    // # _box.assets.extend(assets_ids)
+    // #_new_box = OwnerBox(seats=_box.seats, assets=_box.assets, bought_tickets=b_t)
+    // _new_box = OwnerBox(seats=_s, assets=_a, bought_tickets=b_t)
+    dig 1
+    len
+    int 6
+    +
+    dup
+    itob
+    extract 6 2
+    byte 0x0006
+    swap
+    concat
+    swap
+    dig 2
+    len
+    +
+    itob
+    extract 6 2
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    swap
+    concat
+    // smart_contracts/event_manager/contract.py:334
+    // op.Box.delete(key)
+    frame_dig -4
+    box_del
+    pop
+    // smart_contracts/event_manager/contract.py:335
+    // op.Box.put(key, _new_box.bytes)
+    frame_dig -4
+    swap
+    box_put
+
+update_owner_box_after_if_else@8:
+    frame_dig -2
+    frame_dig -1
+    frame_bury 1
+    frame_bury 0
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.update_sold_tickets(key: bytes, tt: bytes, amount_to_add: uint64) -> bytes:
+update_sold_tickets:
+    // smart_contracts/event_manager/contract.py:273-276
+    // @subroutine
+    // def update_sold_tickets(
+    //     self, key: Bytes, tt: TicketsType, amount_to_add: UInt64
+    // ) -> None:
+    proto 3 1
+    // smart_contracts/event_manager/contract.py:277
+    // old_amount = tt.sold_amount.native
+    frame_dig -2
+    extract 58 8 // on error: Index access is out of bounds
+    btoi
+    // smart_contracts/event_manager/contract.py:278
+    // new_amount = old_amount + amount_to_add
+    frame_dig -1
+    +
+    // smart_contracts/event_manager/contract.py:279
+    // tt.sold_amount = arc4.UInt64(new_amount)
+    itob
+    frame_dig -2
+    swap
+    replace2 58
+    frame_bury -2
+    // smart_contracts/event_manager/contract.py:280
+    // op.Box.replace(key, 0, tt.bytes)
+    frame_dig -3
+    int 0
+    frame_dig -2
+    box_replace
+    frame_dig -2
+    retsub
+
+
+// smart_contracts.event_manager.contract.EventManager.__init__() -> void:
+__init__:
+    // smart_contracts/event_manager/contract.py:93
+    // def __init__(self) -> None:
+    proto 0 0
+    // smart_contracts/event_manager/contract.py:94
+    // self.name = String()
+    byte "name"
+    byte ""
+    app_global_put
+    // smart_contracts/event_manager/contract.py:95
+    // self.event_begin = GlobalState(UInt64(0), description="Event begin timestamp")
+    byte "event_begin"
+    int 0
+    app_global_put
+    // smart_contracts/event_manager/contract.py:96
+    // self.event_end = GlobalState(UInt64(0), description="Event end timestamp")
+    byte "event_end"
+    int 0
+    app_global_put
+    // smart_contracts/event_manager/contract.py:97
+    // self.event_owner = GlobalState(Global.zero_address, description="Event owner")
+    byte "event_owner"
+    global ZeroAddress
+    app_global_put
+    // smart_contracts/event_manager/contract.py:98
+    // self.event_status = UInt64(INIT)
+    byte "event_status"
+    int 0
+    app_global_put
+    // smart_contracts/event_manager/contract.py:99
+    // self.last_type_index = UInt64(0)
+    byte "last_type_index"
+    int 0
+    app_global_put
+    // smart_contracts/event_manager/contract.py:100
+    // log(APP_CREATED)
+    byte "[EVENT MANAGER] Created"
+    log
+    retsub

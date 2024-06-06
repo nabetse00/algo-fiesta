@@ -1,0 +1,7 @@
+#pragma version 10
+
+smart_contracts.event_manager.contract.EventManager.clear_state_program:
+    // smart_contracts/event_manager/contract.py:94
+    // class EventManager(ARC4Contract):
+    int 1
+    return

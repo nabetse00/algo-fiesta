@@ -17,7 +17,8 @@ ruff = "^0.1.6"
 mypy = "*"
 pip-audit = "*"
 pre-commit = "*"
-puyapy = "*"
+# puyapy = "*"
+puyapy = { git = "https://github.com/algorandfoundation/puya.git", branch = "fix-arc4-dynamic-element-read" }
 
 [build-system]
 requires = ["poetry-core"]
