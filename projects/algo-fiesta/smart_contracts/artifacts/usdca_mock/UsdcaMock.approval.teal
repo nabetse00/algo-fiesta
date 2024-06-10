@@ -1,0 +1,302 @@
+#pragma version 10
+
+smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:
+    txn ApplicationID
+    bnz main_entrypoint@2
+    callsub __init__
+
+main_entrypoint@2:
+    // smart_contracts/usdca_mock/contract.py:8
+    // class UsdcaMock(ARC4Contract):
+    txn NumAppArgs
+    bz main_bare_routing@8
+    method "dispenser_create(pay)uint64"
+    method "dispense(uint64)void"
+    txna ApplicationArgs 0
+    match main_dispenser_create_route@4 main_dispense_route@5
+    err // reject transaction
+
+main_dispenser_create_route@4:
+    // smart_contracts/usdca_mock/contract.py:15
+    // @arc4.abimethod
+    txn OnCompletion
+    !
+    assert // OnCompletion is NoOp
+    txn ApplicationID
+    assert // is not creating
+    // smart_contracts/usdca_mock/contract.py:8
+    // class UsdcaMock(ARC4Contract):
+    txn GroupIndex
+    int 1
+    -
+    dup
+    gtxns TypeEnum
+    int pay
+    ==
+    assert // transaction type is pay
+    // smart_contracts/usdca_mock/contract.py:15
+    // @arc4.abimethod
+    callsub dispenser_create
+    itob
+    byte 0x151f7c75
+    swap
+    concat
+    log
+    int 1
+    return
+
+main_dispense_route@5:
+    // smart_contracts/usdca_mock/contract.py:36
+    // @arc4.abimethod()
+    txn OnCompletion
+    !
+    assert // OnCompletion is NoOp
+    txn ApplicationID
+    assert // is not creating
+    // smart_contracts/usdca_mock/contract.py:8
+    // class UsdcaMock(ARC4Contract):
+    txna ApplicationArgs 1
+    btoi
+    // smart_contracts/usdca_mock/contract.py:36
+    // @arc4.abimethod()
+    callsub dispense
+    int 1
+    return
+
+main_bare_routing@8:
+    // smart_contracts/usdca_mock/contract.py:8
+    // class UsdcaMock(ARC4Contract):
+    txn OnCompletion
+    !
+    assert // reject transaction
+    txn ApplicationID
+    !
+    assert // is creating
+    int 1
+    return
+
+
+// smart_contracts.usdca_mock.contract.UsdcaMock.dispenser_create(payMbr: uint64) -> uint64:
+dispenser_create:
+    // smart_contracts/usdca_mock/contract.py:15-16
+    // @arc4.abimethod
+    // def dispenser_create(self, payMbr: gtxn.PaymentTransaction) -> UInt64:
+    proto 1 1
+    // smart_contracts/usdca_mock/contract.py:17
+    // assert self.dispenser_status == INIT, "cannot re run this method"
+    int 0
+    byte "dispenser_status"
+    app_global_get_ex
+    assert // check dispenser_status exists
+    !
+    assert // cannot re run this method
+    // smart_contracts/usdca_mock/contract.py:18
+    // assert payMbr.amount >= UInt64(100_000), "Asset Mbr not meet"
+    frame_dig -1
+    gtxns Amount
+    int 100000
+    >=
+    assert // Asset Mbr not meet
+    // smart_contracts/usdca_mock/contract.py:19
+    // app_addr = Global.current_application_address
+    global CurrentApplicationAddress
+    // smart_contracts/usdca_mock/contract.py:20-30
+    // asset_itxn = itxn.AssetConfig(
+    //     asset_name=b"MOCK USDC_A",
+    //     unit_name=b"MK_USDCA",
+    //     total=SUPPLY,
+    //     decimals=6,
+    //     manager=app_addr,
+    //     reserve=app_addr,
+    //     clawback=app_addr,
+    //     default_frozen=False,
+    //     fee=0,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/usdca_mock/contract.py:28
+    // default_frozen=False,
+    int 0
+    itxn_field ConfigAssetDefaultFrozen
+    dup
+    itxn_field ConfigAssetClawback
+    dup
+    itxn_field ConfigAssetReserve
+    itxn_field ConfigAssetManager
+    // smart_contracts/usdca_mock/contract.py:24
+    // decimals=6,
+    int 6
+    itxn_field ConfigAssetDecimals
+    // smart_contracts/usdca_mock/contract.py:23
+    // total=SUPPLY,
+    int 18446744073709551615
+    itxn_field ConfigAssetTotal
+    // smart_contracts/usdca_mock/contract.py:22
+    // unit_name=b"MK_USDCA",
+    byte "MK_USDCA"
+    itxn_field ConfigAssetUnitName
+    // smart_contracts/usdca_mock/contract.py:21
+    // asset_name=b"MOCK USDC_A",
+    byte "MOCK USDC_A"
+    itxn_field ConfigAssetName
+    // smart_contracts/usdca_mock/contract.py:20
+    // asset_itxn = itxn.AssetConfig(
+    int acfg
+    itxn_field TypeEnum
+    // smart_contracts/usdca_mock/contract.py:29
+    // fee=0,
+    int 0
+    itxn_field Fee
+    // smart_contracts/usdca_mock/contract.py:20-30
+    // asset_itxn = itxn.AssetConfig(
+    //     asset_name=b"MOCK USDC_A",
+    //     unit_name=b"MK_USDCA",
+    //     total=SUPPLY,
+    //     decimals=6,
+    //     manager=app_addr,
+    //     reserve=app_addr,
+    //     clawback=app_addr,
+    //     default_frozen=False,
+    //     fee=0,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/usdca_mock/contract.py:31
+    // self.asset_id = asset_itxn.created_asset.id
+    byte "asset_id"
+    // smart_contracts/usdca_mock/contract.py:20-30
+    // asset_itxn = itxn.AssetConfig(
+    //     asset_name=b"MOCK USDC_A",
+    //     unit_name=b"MK_USDCA",
+    //     total=SUPPLY,
+    //     decimals=6,
+    //     manager=app_addr,
+    //     reserve=app_addr,
+    //     clawback=app_addr,
+    //     default_frozen=False,
+    //     fee=0,
+    // ).submit()
+    itxn CreatedAssetID
+    // smart_contracts/usdca_mock/contract.py:31
+    // self.asset_id = asset_itxn.created_asset.id
+    app_global_put
+    // smart_contracts/usdca_mock/contract.py:32
+    // log("Mock USDC_A created", self.asset_id, sep=" ")
+    int 0
+    byte "asset_id"
+    app_global_get_ex
+    assert // check asset_id exists
+    itob
+    byte "Mock USDC_A created "
+    swap
+    concat
+    log
+    // smart_contracts/usdca_mock/contract.py:33
+    // self.dispenser_status = UInt64(LIVE)
+    byte "dispenser_status"
+    int 1
+    app_global_put
+    // smart_contracts/usdca_mock/contract.py:34
+    // return self.asset_id
+    int 0
+    byte "asset_id"
+    app_global_get_ex
+    assert // check asset_id exists
+    retsub
+
+
+// smart_contracts.usdca_mock.contract.UsdcaMock.dispense(amount: uint64) -> void:
+dispense:
+    // smart_contracts/usdca_mock/contract.py:36-37
+    // @arc4.abimethod()
+    // def dispense(self, amount: UInt64) -> None:
+    proto 1 0
+    // smart_contracts/usdca_mock/contract.py:38
+    // assert self.dispenser_status == LIVE, "Run create method first"
+    int 0
+    byte "dispenser_status"
+    app_global_get_ex
+    assert // check dispenser_status exists
+    int 1
+    ==
+    assert // Run create method first
+    // smart_contracts/usdca_mock/contract.py:39
+    // assert amount < MAX_DISPENSE, "Max dispense is 10 000 Mock USDC_A"
+    frame_dig -1
+    int 10000000000
+    <
+    assert // Max dispense is 10 000 Mock USDC_A
+    // smart_contracts/usdca_mock/contract.py:40
+    // asset = Asset(self.asset_id)
+    int 0
+    byte "asset_id"
+    app_global_get_ex
+    assert // check asset_id exists
+    // smart_contracts/usdca_mock/contract.py:41
+    // assert Txn.sender.is_opted_in(asset), "User not opt in"
+    txn Sender
+    dig 1
+    asset_holding_get AssetBalance
+    bury 1
+    assert // User not opt in
+    // smart_contracts/usdca_mock/contract.py:42
+    // app_addr = Global.current_application_address
+    global CurrentApplicationAddress
+    // smart_contracts/usdca_mock/contract.py:43-49
+    // itxn.AssetTransfer(
+    //     xfer_asset=asset.id,
+    //     asset_amount=amount,
+    //     asset_receiver=Txn.sender,
+    //     asset_sender=app_addr,
+    //     fee=0,
+    // ).submit()
+    itxn_begin
+    // smart_contracts/usdca_mock/contract.py:46
+    // asset_receiver=Txn.sender,
+    txn Sender
+    itxn_field AssetReceiver
+    itxn_field AssetSender
+    frame_dig -1
+    itxn_field AssetAmount
+    itxn_field XferAsset
+    // smart_contracts/usdca_mock/contract.py:43
+    // itxn.AssetTransfer(
+    int axfer
+    itxn_field TypeEnum
+    // smart_contracts/usdca_mock/contract.py:48
+    // fee=0,
+    int 0
+    itxn_field Fee
+    // smart_contracts/usdca_mock/contract.py:43-49
+    // itxn.AssetTransfer(
+    //     xfer_asset=asset.id,
+    //     asset_amount=amount,
+    //     asset_receiver=Txn.sender,
+    //     asset_sender=app_addr,
+    //     fee=0,
+    // ).submit()
+    itxn_submit
+    // smart_contracts/usdca_mock/contract.py:50
+    // return
+    retsub
+
+
+// smart_contracts.usdca_mock.contract.UsdcaMock.__init__() -> void:
+__init__:
+    // smart_contracts/usdca_mock/contract.py:10
+    // def __init__(self) -> None:
+    proto 0 0
+    // smart_contracts/usdca_mock/contract.py:11
+    // self.dispenser_name = String("USDC_A dispenser localnet")
+    byte "dispenser_name"
+    byte "USDC_A dispenser localnet"
+    app_global_put
+    // smart_contracts/usdca_mock/contract.py:12
+    // self.asset_id = UInt64(0)
+    byte "asset_id"
+    int 0
+    app_global_put
+    // smart_contracts/usdca_mock/contract.py:13
+    // self.dispenser_status = UInt64(INIT)
+    byte "dispenser_status"
+    int 0
+    app_global_put
+    retsub

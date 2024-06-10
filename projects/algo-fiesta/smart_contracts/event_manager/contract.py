@@ -1,6 +1,7 @@
 from algopy import (
     ARC4Contract,
     arc4,
+    Asset,
     String,
     UInt64,
     Account,
@@ -23,6 +24,10 @@ from typing import TypeAlias
 #############
 # Constants #
 #############
+# usdc asa
+# USDC_A_LOCALNET = ???
+# USDC_A_TESTNET = 10458941
+# USDC_A_MAINNET = 31566704
 MIN_DURATION = 24 * 3600  # one day in hours
 MIN_AHEAD_TIME = 12 * 3600  # 12h in seconds
 # State
@@ -55,6 +60,9 @@ EVENT_ENDED = "Event Ended"
 EVENT_NOT_ENDED = "Event not Ended"
 USER_DOESNT_EXIST = "User doesn't exist"
 NOT_ASSET_OWNER = "Not asset owner"
+ASSET_PAYMENT_TOO_LOW = "Asset payment too low"
+WROMG_ASSET_RECEIVER = "Wrong asset receiver"
+WRONG_ASSET_ID = "Wrong Asset id"
 
 # Logs
 APP_CREATED = "[EVENT MANAGER] Created"
@@ -96,6 +104,7 @@ class EventManager(ARC4Contract):
         self.event_begin = GlobalState(UInt64(0), description="Event begin timestamp")
         self.event_end = GlobalState(UInt64(0), description="Event end timestamp")
         self.event_owner = GlobalState(Global.zero_address, description="Event owner")
+        self.usdc_asset = Asset()
         self.event_status = UInt64(INIT)
         self.last_type_index = UInt64(0)
         log(APP_CREATED)
@@ -105,6 +114,7 @@ class EventManager(ARC4Contract):
         self,
         name: String,
         owner: Account,
+        usdc_asset: Asset,
         begin_ts: UInt64,
         end_ts: UInt64,
         tt_urls: arc4.DynamicArray[arc4.String],
@@ -113,16 +123,25 @@ class EventManager(ARC4Contract):
         tt_supply: arc4.DynamicArray[arc4.UInt64],
         tt_max_per_user: arc4.DynamicArray[arc4.UInt64],
         tt_sold_amount: arc4.DynamicArray[arc4.UInt64],
-        pay: gtxn.PaymentTransaction,
+        pay_mbr: gtxn.PaymentTransaction,
     ) -> None:
         security_checks(UInt64(2))
         app_addr = Global.current_application_address
-        assert pay.receiver == app_addr, WRONG_PAYMENT_RECEIVER
-        assert pay.rekey_to == Global.zero_address, WRONG_RE_KEY_TO
+        assert pay_mbr.receiver == app_addr, WRONG_PAYMENT_RECEIVER
+        assert pay_mbr.rekey_to == Global.zero_address, WRONG_RE_KEY_TO
         pre_mbr = app_addr.min_balance
         assert self.event_status == UInt64(INIT), WRONG_STATUS_NOT_INIT
         assert owner != Global.zero_address, ZERO_ADDRESS_ERROR
         self.event_owner.value = owner
+        # opt_in to usdc_asset
+        itxn.AssetTransfer(
+            xfer_asset=usdc_asset,
+            asset_amount=0,
+            asset_receiver=app_addr,
+            sender=app_addr,
+            fee=0
+        ).submit()
+        self.usdc_asset = usdc_asset
         current_ts = Global.latest_timestamp
         assert begin_ts > (current_ts + MIN_AHEAD_TIME), WRONG_BEGIN_TIMESTAMP
         assert end_ts > (begin_ts + MIN_DURATION), WRONG_END_TIMESTAMP
@@ -143,7 +162,7 @@ class EventManager(ARC4Contract):
         self.update_to(UInt64(STARTED))
         post_mbr = Global.current_application_address.min_balance
         pay_amount = post_mbr - pre_mbr
-        assert pay.amount == pay_amount, WRONG_PAYMENT_AMOUNT
+        assert pay_mbr.amount == pay_amount, WRONG_PAYMENT_AMOUNT
         log(APP_STARTED)
 
     @arc4.abimethod
@@ -153,14 +172,15 @@ class EventManager(ARC4Contract):
         number_tickets: UInt64,
         ticket_type_index: UInt64,
         seats: SeatsArray,
-        pay: gtxn.PaymentTransaction,
+        pay_mbr: gtxn.PaymentTransaction,
+        pay_asset: gtxn.AssetTransferTransaction,
     ) -> None:
         # checks
-        security_checks(UInt64(2))
+        security_checks(UInt64(3))
         self.check_status_not_ended()
         app_addr = Global.current_application_address
-        assert pay.receiver == app_addr, WRONG_PAYMENT_RECEIVER
-        assert pay.rekey_to == Global.zero_address, WRONG_RE_KEY_TO
+        assert pay_mbr.receiver == app_addr, WRONG_PAYMENT_RECEIVER
+        assert pay_mbr.rekey_to == Global.zero_address, WRONG_RE_KEY_TO
         pre_mbr = app_addr.min_balance
         # retrieve ticket type
         tt_key = self.box_key_from_uint64(
@@ -211,10 +231,15 @@ class EventManager(ARC4Contract):
         # update tickets sold
         self.update_sold_tickets(tt_key, tt, number_tickets)
         # ensure amount and mbr
-        post_mbr = Global.current_application_address.min_balance
         seats_cost = number_tickets * tt.price.native
-        pay_amount = post_mbr - pre_mbr + seats_cost
-        assert pay.amount >= pay_amount, WRONG_PAYMENT_AMOUNT
+        assert pay_asset.xfer_asset == self.usdc_asset, WRONG_ASSET_ID
+        assert pay_asset.asset_amount >= seats_cost, ASSET_PAYMENT_TOO_LOW
+        assert pay_asset.asset_receiver == app_addr, WROMG_ASSET_RECEIVER
+        assert pay_asset.rekey_to == Global.zero_address, WRONG_RE_KEY_TO
+        post_mbr = Global.current_application_address.min_balance
+        pay_amount = post_mbr - pre_mbr
+        # pay_amount = post_mbr - pre_mbr + seats_cost
+        assert pay_mbr.amount >= pay_amount, WRONG_PAYMENT_AMOUNT
 
     @arc4.abimethod
     def claim_asset(self, owner: Account, asset_id: UInt64) -> None:
@@ -227,7 +252,7 @@ class EventManager(ARC4Contract):
         itxn.AssetTransfer(
             asset_amount=1,
             xfer_asset=asset_id,
-            asset_sender=app_addr,
+            sender=app_addr,
             asset_receiver=owner,
             fee=0,
         ).submit()
@@ -257,6 +282,13 @@ class EventManager(ARC4Contract):
             receiver=self.event_owner.value,
             sender=app_addr,
             fee=0,
+        ).submit()
+        app_asset_bal = self.usdc_asset.balance(app_addr)
+        itxn.AssetTransfer(
+            xfer_asset=self.usdc_asset,
+            sender=app_addr,
+            asset_receiver=self.event_owner.value,
+            asset_amount=app_asset_bal,
         ).submit()
         return
 

@@ -1,0 +1,7 @@
+#pragma version 10
+
+smart_contracts.usdca_mock.contract.UsdcaMock.clear_state_program:
+    // smart_contracts/usdca_mock/contract.py:8
+    // class UsdcaMock(ARC4Contract):
+    int 1
+    return
