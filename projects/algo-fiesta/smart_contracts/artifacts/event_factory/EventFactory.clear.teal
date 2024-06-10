@@ -1,7 +1,7 @@
 #pragma version 10
 
 smart_contracts.event_factory.contract.EventFactory.clear_state_program:
-    // smart_contracts/event_factory/contract.py:22
+    // smart_contracts/event_factory/contract.py:42
     // class EventFactory(ARC4Contract):
     int 1
     return

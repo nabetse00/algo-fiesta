@@ -8,14 +8,12 @@ from algopy import (
     GlobalState,
     subroutine,
     urange,
-    uenumerate,
     Bytes,
     op,
     log,
     gtxn,
     Txn,
     itxn,
-    Asset,
     OpUpFeeSource,
     ensure_budget,
 )
@@ -56,6 +54,7 @@ SEAT_TAKEN = "Unavailable seat"
 EVENT_ENDED = "Event Ended"
 EVENT_NOT_ENDED = "Event not Ended"
 USER_DOESNT_EXIST = "User doesn't exist"
+NOT_ASSET_OWNER = "Not asset owner"
 
 # Logs
 APP_CREATED = "[EVENT MANAGER] Created"
@@ -190,7 +189,7 @@ class EventManager(ARC4Contract):
         # seat not taken
         s_key = self.box_key_from_uint64(Bytes(SEATS_BOX_PREFIX), ticket_type_index)
         is_taken = self.seats_contains(s_key, seats)
-        assert is_taken == False, SEAT_TAKEN
+        assert not is_taken, SEAT_TAKEN
         # proceed to sell tickets
         # create asas
         ab_key = self.box_key_from_uint64(Bytes(ASSETS_BOX_PREFIX), ticket_type_index)
@@ -219,10 +218,10 @@ class EventManager(ARC4Contract):
 
     @arc4.abimethod
     def claim_asset(self, owner: Account, asset_id: UInt64) -> None:
-        self.updateStatus()
+        self.update_status()
         # check owner is correct
         is_owner = self.check_owner_asset(owner, asset_id)
-        assert is_owner, "Not Asset Owner"
+        assert is_owner, NOT_ASSET_OWNER
         # transfer asset
         app_addr = Global.current_application_address
         itxn.AssetTransfer(
@@ -236,7 +235,7 @@ class EventManager(ARC4Contract):
 
     @arc4.abimethod
     def un_freeze_asset(self, owner: Account, asset_id: UInt64, seat: Bytes32) -> None:
-        self.updateStatus()
+        self.update_status()
         assert self.event_status == UInt64(ENDED), EVENT_NOT_ENDED
         # app_addr = Global.current_application_address
         itxn.AssetFreeze(
@@ -249,7 +248,7 @@ class EventManager(ARC4Contract):
 
     @arc4.abimethod
     def withdraw(self) -> None:
-        self.updateStatus()
+        self.update_status()
         assert self.event_status == UInt64(ENDED), EVENT_NOT_ENDED
         app_addr = Global.current_application_address
         amount = app_addr.balance - app_addr.min_balance
@@ -265,7 +264,7 @@ class EventManager(ARC4Contract):
     # status subroutines  #
     #######################
     @subroutine
-    def updateStatus(self) -> None:
+    def update_status(self) -> None:
         now = Global.latest_timestamp
         if now > self.event_end.value:
             self.update_to(UInt64(ENDED))
@@ -288,7 +287,7 @@ class EventManager(ARC4Contract):
 
     @subroutine
     def check_status_not_ended(self) -> None:
-        self.updateStatus()
+        self.update_status()
         assert self.event_status != UInt64(ENDED), EVENT_ENDED
 
     ###################
@@ -312,7 +311,7 @@ class EventManager(ARC4Contract):
     @subroutine
     def read_ticket_type_box(self, key: Bytes) -> TicketsType:
         b_value = op.Box.get(key)
-        assert b_value[1] == True, BOX_GET_ERROR
+        assert b_value[1], BOX_GET_ERROR
         value = TicketsType.from_bytes(b_value[0])
         return value
 
@@ -353,9 +352,9 @@ class EventManager(ARC4Contract):
     ) -> None:
         assert seats.length == assets_ids.length, "lengths must match"
         b_owner = op.Box.get(key)
-        if b_owner[1] == False:
+        if not b_owner[1]:
             b_t = BoughtTicketsArray()
-            for i in urange(self.last_type_index):
+            for _i in urange(self.last_type_index):
                 b_t.append(arc4.UInt64(0))
             b_t[ticket_type_index] = arc4.UInt64(seats.length)
             _box = OwnerBox(seats=seats, assets=assets_ids, bought_tickets=b_t)
@@ -395,7 +394,7 @@ class EventManager(ARC4Contract):
     @subroutine
     def append_seats_box(self, key: Bytes, seats: SeatsArray) -> None:
         b_seats = op.Box.get(key)
-        if b_seats[1] == False:
+        if not b_seats[1]:
             op.Box.put(key, seats.bytes)
         else:
             arr = SeatsArray.from_bytes(b_seats[0])
@@ -407,7 +406,7 @@ class EventManager(ARC4Contract):
     @subroutine
     def seats_contains(self, key: Bytes, ref_seats: SeatsArray) -> bool:
         r_seats = op.Box.get(key)
-        if r_seats[1] == False:
+        if not r_seats[1]:
             return False
         value = SeatsArray.from_bytes(r_seats[0])
         for i in urange(value.length):
@@ -440,7 +439,7 @@ class EventManager(ARC4Contract):
     @subroutine
     def append_assets_to_box(self, key: Bytes, assets_ids: AssetsArray) -> None:
         b_assets = op.Box.get(key)
-        if b_assets[1] == False:
+        if not b_assets[1]:
             op.Box.put(key, assets_ids.bytes)
         else:
             arr = AssetsArray.from_bytes(b_assets[0])
@@ -475,7 +474,7 @@ class EventManager(ARC4Contract):
     def check_owner_asset(self, owner: Account, asset_id: UInt64) -> bool:
         ob_key = self.box_key_from_address(Bytes(OWNER_BOX_PREFIX), owner)
         ob_res = self.read_owner_box(ob_key)
-        assert ob_res[1] == True, USER_DOESNT_EXIST
+        assert ob_res[1], USER_DOESNT_EXIST
         assets = ob_res[0].assets.copy()
         found = False
         for i in urange(assets.length):
