@@ -1,22 +1,21 @@
-import { Image, Container, Title, Button, Group, Text, List, ThemeIcon, rem } from '@mantine/core';
-import { IconCheck } from '@tabler/icons-react';
-import classes from './BuyTickets.module.css';
+import { Image, Container, Title, Button, Group, Text, List, ThemeIcon, rem } from "@mantine/core";
+import { IconCheck } from "@tabler/icons-react";
+import classes from "./BuyTickets.module.css";
+import { useNavigate } from "react-router-dom";
 
 interface HeroProps {
-  image:string,
-
+  image: string;
 }
 
-export function HeroBuyTickets({image}:HeroProps) {
+export function HeroBuyTickets({ image }: HeroProps) {
+  const navigate = useNavigate();
   return (
     <Container size="md">
       <div className={classes.inner}>
         <div className={classes.content}>
-          <Title className={classes.title}>
-            Start buying Tickets now !
-          </Title>
+          <Title className={classes.title}>Start buying Tickets now !</Title>
           <Text c="dimmed" mt="md">
-    Go to our list of events and buy some tickets now with USDC on algorand !
+            Go to our list of events and buy some tickets now with USDC on algorand !
           </Text>
 
           <List
@@ -41,7 +40,7 @@ export function HeroBuyTickets({image}:HeroProps) {
             <Button radius="xl" size="md" className={classes.control}>
               Buy tickets
             </Button>
-            <Button variant="default" radius="xl" size="md" className={classes.control}>
+            <Button onClick={() => navigate("/dispenser")} variant="default" radius="xl" size="md" className={classes.control}>
               Dispenser [testnet Mock USDC]
             </Button>
           </Group>

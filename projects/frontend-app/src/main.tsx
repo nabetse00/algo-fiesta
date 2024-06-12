@@ -11,12 +11,18 @@ import {
 } from "react-router-dom";
 import MainPage from './pages/MainPage.tsx';
 import DispenserPage from './pages/DispenserPage.tsx';
+import CreateEventPage from './pages/CreateEventPage.tsx';
+import ListEventsPage from './pages/ListEventsPage.tsx';
+import EventPage from './pages/EventPage.tsx';
 
 const router = createHashRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
       <Route path="" element={<MainPage />} />
       <Route path="dispenser" element={<DispenserPage />} />
+      <Route path="create_event" element={<CreateEventPage />} />
+      <Route path="list_events" element={<ListEventsPage />} />
+      <Route path="events/:id" element={<EventPage />} />
     </Route>
   )
 );

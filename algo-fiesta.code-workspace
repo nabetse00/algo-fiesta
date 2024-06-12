@@ -7,6 +7,9 @@
     {
       "path": "projects/algo-fiesta"
     },
+    {
+      "path": "projects/frontend-app"
+    },
   ],
   "settings": {
     "files.exclude": {

@@ -1,6 +1,7 @@
 import { Image, Container, Title, Button, Group, Text, List, ThemeIcon, rem } from '@mantine/core';
 import { IconCheck } from '@tabler/icons-react';
 import classes from './BuyTickets.module.css';
+import { useNavigate } from 'react-router-dom';
 
 interface HeroProps {
   image:string,
@@ -8,6 +9,7 @@ interface HeroProps {
 }
 
 export function HeroCreateEvent({image}:HeroProps) {
+  const navigate = useNavigate()
   return (
     <Container size="md">
       <div className={classes.inner}>
@@ -47,7 +49,7 @@ export function HeroCreateEvent({image}:HeroProps) {
             <Button radius="xl" size="md" className={classes.control}>
               Create Event
             </Button>
-            <Button variant="default" radius="xl" size="md" className={classes.control}>
+            <Button  onClick={()=> navigate('/dispenser')} variant="default" radius="xl" size="md" className={classes.control}>
               Dispenser [testnet Mock USDC]
             </Button>
           </Group>
