@@ -3,8 +3,8 @@
 ---
 
 #### **1. Introduction**
-- **Logo:** ![test](./projects/frontend-app/src/assets/logo_h.png)
-Empowering Events on the Blockchain"
+![test](./projects/frontend-app/src/assets/logo_h.png)
+*Empowering Events on the Blockchain*
 - **Author** [Nabeste] https://github.com/nabetse00/algo-fiesta
 - **Date:** 12/06/2024
 
