@@ -35,13 +35,13 @@ export default function Account() {
 
   async function getBalance(address: string) {
     const info = await algodClient.accountInformation(address).do();
-    console.log(`info is ${JSON.stringify(info)}`);
+    // console.log(`info is ${JSON.stringify(info)}`);
     return info["amount"];
   }
 
    async function getAssetBalance(address: string) {
     const info = await algodClient.accountAssetInformation(address, USDC_A_ID).do();
-    console.log(`asset info is ${JSON.stringify(info)}`);
+    // console.log(`asset info is ${JSON.stringify(info)}`);
     return info["asset-holding"]["amount"];
   }
 

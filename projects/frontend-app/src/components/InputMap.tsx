@@ -12,9 +12,9 @@ interface CustomInputProps {
   defaultValue?: Feature | undefined;
   onChange?: (value: Feature | undefined) => void;
 }
+const apiKey = import.meta.env.VITE_GEOMAP_API_KEY;
 
-export default function MapComponent({ value, defaultValue, onChange }: CustomInputProps) {
-  const apiKey = import.meta.env.VITE_GEOMAP_API_KEY;
+export default function InputMapComponent({ value, defaultValue, onChange }: CustomInputProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapController, setMapController] = useState<MapController>();
   const [_value, handleChange] = useUncontrolled({

@@ -1,4 +1,4 @@
-import { ActionIcon, Card, Table, Text } from "@mantine/core";
+import { ActionIcon, Card, LoadingOverlay, Table, Text } from "@mantine/core";
 import { IconSettingsDown } from "@tabler/icons-react";
 import { getAlgodConfigFromViteEnvironment } from "../utils/network";
 import * as algokit from "@algorandfoundation/algokit-utils";
@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import algosdk from "algosdk";
 import { ellipseAddress } from "../utils/ellipseAddress";
 import { useNavigate } from "react-router-dom";
+import { useDisclosure } from "@mantine/hooks";
 
 const FACTORY_APP_ID = Number(import.meta.env.VITE_EVENT_FACTORY_CONTRACT);
 
@@ -22,7 +23,8 @@ type EventElementType = {
 };
 
 export default function ListEvents() {
-const navigate = useNavigate()
+  const [visible, { open, close }] = useDisclosure(false);
+  const navigate = useNavigate();
   const [elements, setElenemts] = useState<EventElementType[]>([
     {
       appID: 0,
@@ -53,6 +55,7 @@ const navigate = useNavigate()
   );
 
   async function getEvents() {
+    open()
     const state = await factoryClient.getGlobalState();
     const lastIndex = state.lastEventManager!.asNumber();
     if (lastIndex == 0) {
@@ -85,6 +88,7 @@ const navigate = useNavigate()
         });
       }
     }
+    close()
     return events.reverse();
   }
 
@@ -101,6 +105,7 @@ const navigate = useNavigate()
       <Card.Section withBorder inheritPadding py="md">
         <Text fw={500}>Event on chain</Text>
       </Card.Section>
+      <LoadingOverlay visible={visible} zIndex={5000} overlayProps={{ radius: "sm", blur: 2 }} />
       <Table>
         <Table.Thead>
           <Table.Tr>
@@ -133,7 +138,7 @@ const navigate = useNavigate()
               <Table.Td>
                 {
                   <ActionIcon>
-                    <IconSettingsDown onClick={()=> navigate(`/events/${element.appID}`)}/>
+                    <IconSettingsDown onClick={() => navigate(`/events/${element.appID}`)} />
                   </ActionIcon>
                 }
               </Table.Td>

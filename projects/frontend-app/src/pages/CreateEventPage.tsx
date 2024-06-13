@@ -4,7 +4,7 @@ import { useForm } from "@mantine/form";
 import "@mantine/dates/styles.css";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import MapComponent from "../components/maps";
+import InputMapComponent from "../components/InputMap";
 // import type { Feature } from "@maptiler/geocoding-control/types";
 import { IconCheck, IconCoin, IconPhotoUp, IconTrashFilled, IconX } from "@tabler/icons-react";
 import { useState } from "react";
@@ -304,8 +304,8 @@ export default function CreateEventPage() {
           name: values.name,
           owner: activeAddress!,
           usdcAsset: USDC_A_ID,
-          beginTs: Math.floor(eventType.begin_date.getTime()/1000),
-          endTs: Math.floor(eventType.end_date.getTime()/1000),
+          beginTs: Math.floor(eventType.begin_date.getTime() / 1000),
+          endTs: Math.floor(eventType.end_date.getTime() / 1000),
           ttUrls: ticketsData.ticketUri,
           ttHash: ticketsData.ticketUriHash,
           ttPrices: ticketsData.ticketPrice,
@@ -380,7 +380,7 @@ export default function CreateEventPage() {
               placeholder="Event End date"
             />
             <Fieldset legend="Event Location" variant="filled">
-              <MapComponent {...form.getInputProps("location")} key={form.key("location")} />
+              <InputMapComponent {...form.getInputProps("location")} key={form.key("location")} />
             </Fieldset>
 
             {form.getValues().tickets.map((_item, index) => (
@@ -472,7 +472,7 @@ export default function CreateEventPage() {
         }}
         centered
       >
-        <p>Meta Data </p>
+        <div>Meta Data </div>
         <CodeHighlight
           code={JSON.stringify(form.getValues(), null, "\t")}
           language="json"

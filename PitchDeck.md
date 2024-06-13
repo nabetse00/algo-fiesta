@@ -84,4 +84,3 @@
   - 20% Operations: Team expansion and operational costs.
   - 10% Contingency: Buffer for unexpected expenses.
 
----

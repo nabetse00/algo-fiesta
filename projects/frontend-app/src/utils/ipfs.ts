@@ -65,7 +65,7 @@ export async function uploadJson(obj: Object): Promise<string | undefined> {
 export async function getJsonData(cid: string){
     const x = await fetch(ipfsUrl(cid))
     const json = await x.json()
-    console.log(json)
+    // console.log(json)
     return json;
 }
 
