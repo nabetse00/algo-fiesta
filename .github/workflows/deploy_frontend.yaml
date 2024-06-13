@@ -1,55 +1,64 @@
-name: Deploy
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
 
 on:
+  # Runs on pushes targeting the default branch
   push:
-    branches:
-      - main
+    branches: ['main']
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          working-directory: ./projects/frontend-app
-
-      - name: Install dependencies
-        uses: bahmutov/npm-install@v1
-        with: 
-           working-directory: ./projects/frontend-app
-
-      - name: Build project
-        # working-directory: ./projects/frontend-app
-        run: npm run build
-
-      - name: Upload production-ready build files
-        uses: actions/upload-artifact@v3
-        with:
-          name: production-files
-          path: ./projects/frontend-app/dist
-
+  # Single deploy job since we're just deploying
   deploy:
-    name: Deploy
-    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Node
+        uses: actions/setup-node@v3
         with:
-          name: production-files
-          path: ./projects/frontend-app/dist
-
+          node-version: 20
+          cache: 'npm'
+      # - name: Install dependencies [hh]
+      #  run: npm install
+      # - name: Compile contracts
+      #  run: npx hardhat compile
+      #  env:
+      #    TESTNET_EOA_PRIVATE_KEY: "${{ secrets.TESTNET_EOA_PRIVATE_KEY }}"
+      - name: Install dependencies
+        working-directory: ./projects/frontend-app
+        run: npm install
+      - name: Build
+        working-directory: ./projects/frontend-app
+        run: npm run build
+        # env:
+        #  VITE_PINATA_API_KEY: "${{ secrets.VITE_PINATA_API_KEY }}"
+        #  VITE_PINATA_API_SECRET: "${{ secrets.VITE_PINATA_API_SECRET }}"
+        #  VITE_TESTNET_AF_ADDR: "${{ secrets.VITE_TESTNET_AF_ADDR }}"
+        #  VITE_PINATA_JWT: "${{ secrets.VITE_PINATA_JWT }}"
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          # Upload dist repository
+          path: './projects/frontend-app/dist'
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./projects/frontend-app/dist
+        id: deployment
+        uses: actions/deploy-pages@v1
