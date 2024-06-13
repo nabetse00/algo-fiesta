@@ -45,6 +45,7 @@ export default function ListEvents() {
   const dappFlowNetworkName = useMemo(() => {
     return algodConfig.network === "" ? "sandbox" : algodConfig.network.toLocaleLowerCase();
   }, [algodConfig.network]);
+
   const factoryClient = new EventFactoryClient(
     {
       // sender: { signer, addr: activeAddress } as TransactionSignerAccount,
@@ -55,7 +56,8 @@ export default function ListEvents() {
   );
 
   async function getEvents() {
-    open()
+    open();
+
     const state = await factoryClient.getGlobalState();
     const lastIndex = state.lastEventManager!.asNumber();
     if (lastIndex == 0) {
@@ -88,7 +90,7 @@ export default function ListEvents() {
         });
       }
     }
-    close()
+    close();
     return events.reverse();
   }
 
@@ -106,7 +108,7 @@ export default function ListEvents() {
         <Text fw={500}>Event on chain</Text>
       </Card.Section>
       <LoadingOverlay visible={visible} zIndex={5000} overlayProps={{ radius: "sm", blur: 2 }} />
-      <Table>
+      <Table striped highlightOnHover>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Event App Id</Table.Th>

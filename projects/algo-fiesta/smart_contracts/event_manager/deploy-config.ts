@@ -11,7 +11,7 @@ const TICKET_TYPES_BOX_PREFIX = 'tt-'
 // Below is a showcase of various deployment options you can use in TypeScript Client
 export async function deploy() {
   console.log('=== Deploying EventManager ===')
-
+  // console.log(`server is [${process.env.ALGOD_SERVER}]`)
   const algod = algokit.getAlgoClient()
   const indexer = algokit.getAlgoIndexerClient()
   const deployer = await algokit.mnemonicAccountFromEnvironment({ name: 'DEPLOYER', fundWith: algokit.algos(3) }, algod)

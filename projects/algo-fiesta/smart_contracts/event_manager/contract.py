@@ -37,6 +37,7 @@ ON_GOING = 2
 ENDED = 3
 CANCELED = 4
 # Errors
+ONLY_EVENT_OWNER = "Only owner"
 WRONG_STATUS_NOT_INIT = "Status must be INIT"
 WRONG_STATUS = "Wrong Status"
 ZERO_ADDRESS_ERROR = "Zero Address not allowed"
@@ -238,6 +239,7 @@ class EventManager(ARC4Contract):
         assert pay_asset.rekey_to == Global.zero_address, WRONG_RE_KEY_TO
         post_mbr = Global.current_application_address.min_balance
         pay_amount = post_mbr - pre_mbr
+        # in case native algo payment 
         # pay_amount = post_mbr - pre_mbr + seats_cost
         assert pay_mbr.amount >= pay_amount, WRONG_PAYMENT_AMOUNT
 
@@ -257,11 +259,28 @@ class EventManager(ARC4Contract):
             fee=0,
         ).submit()
         return
+    
+    @arc4.abimethod
+    def freeze_asset(self, owner: Account, asset_id: UInt64, seat: Bytes32) -> None:
+        # only event owner
+        assert Txn.sender == self.event_owner.value, ONLY_EVENT_OWNER
+        # app_addr = Global.current_application_address
+        itxn.AssetFreeze(
+            freeze_asset=asset_id,
+            frozen=True,
+            freeze_account=owner,
+            fee=0,
+        ).submit()
+        return
 
     @arc4.abimethod
     def un_freeze_asset(self, owner: Account, asset_id: UInt64, seat: Bytes32) -> None:
         self.update_status()
+        # event ended 
         assert self.event_status == UInt64(ENDED), EVENT_NOT_ENDED
+        # check owner is correct
+        is_owner = self.check_owner_asset(owner, asset_id)
+        assert is_owner, NOT_ASSET_OWNER
         # app_addr = Global.current_application_address
         itxn.AssetFreeze(
             freeze_asset=asset_id,
@@ -495,7 +514,7 @@ class EventManager(ARC4Contract):
             manager=app_addr,
             reserve=Account.from_bytes(seat_as_addr.bytes),
             clawback=app_addr,
-            default_frozen=True,
+            default_frozen=False,
             url=uri,
             metadata_hash=metadata_hash.bytes,
             fee=0,

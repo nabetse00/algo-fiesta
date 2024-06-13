@@ -1,0 +1,1052 @@
+{
+  "success": false,
+  "error": null,
+  "result": [
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"unprotected-deletable\", Impact: High, Confidence: High\nDescription: Unprotected Deletable Applications\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#unprotected-deletable-application\n",
+      "check": "unprotected-deletable",
+      "impact": "High",
+      "confidence": "High",
+      "help": "- Avoid deletable applications.\n- Add access controls to the vulnerable method.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"unprotected-updatable\", Impact: High, Confidence: High\nDescription: Unprotected Upgradable Applications\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#unprotected-updatable-application\n",
+      "check": "unprotected-updatable",
+      "impact": "High",
+      "confidence": "High",
+      "help": "- Avoid upgradable applications.\n- Add access controls to the vulnerable method.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"can-close-account\", Impact: High, Confidence: High\nDescription: Missing CloseRemainderTo field Validation\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#missing-closeremainderto-field-validation\n",
+      "check": "can-close-account",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Validate `CloseRemainderTo` field in the LogicSig.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"can-close-asset\", Impact: High, Confidence: High\nDescription: Missing AssetCloseTo Field Validation\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#missing-assetcloseto-field-validation\n",
+      "check": "can-close-asset",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Validate `AssetCloseTo` field in the LogicSig.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"is-deletable\", Impact: High, Confidence: High\nDescription: Deletable Applications\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#deletable-application\n",
+      "check": "is-deletable",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Do not approve `DeleteApplication` type application calls.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"is-updatable\", Impact: High, Confidence: High\nDescription: Upgradable Applications\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#upgradable-application\n",
+      "check": "is-updatable",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Do not approve `UpdateApplication` type application calls.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 6,
+      "description": "\nCheck: \"missing-fee-check\", Impact: High, Confidence: High\nDescription: Missing Fee Field Validation\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#missing-fee-field-validation\n",
+      "check": "missing-fee-check",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Validate `Fee` field in the LogicSig.",
+      "paths": [
+        {
+          "short": "0 -> 1 -> 2 -> 13 -> 3 -> 4 -> 6 -> 11 -> 7",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "283: __init__:",
+              "286: proto 0 0",
+              "289: byte \"dispenser_name\"",
+              "290: byte \"USDC_A dispenser localnet\"",
+              "291: app_global_put",
+              "294: byte \"asset_id\"",
+              "295: int 0",
+              "296: app_global_put",
+              "299: byte \"dispenser_status\"",
+              "300: int 0",
+              "301: app_global_put",
+              "302: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method dispenser_create(pay)uint64",
+              "14: method dispense(uint64)void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_dispenser_create_route@4 main_dispense_route@5"
+            ],
+            [
+              "19: main_dispenser_create_route@4:",
+              "22: txn OnCompletion",
+              "23: !",
+              "24: assert",
+              "25: txn ApplicationID",
+              "26: assert",
+              "29: txn GroupIndex",
+              "30: int 1",
+              "31: -",
+              "32: dup",
+              "33: Gtxns TypeEnum",
+              "34: int pay",
+              "35: ==",
+              "36: assert",
+              "39: callsub dispenser_create"
+            ],
+            [
+              "80: dispenser_create:",
+              "84: proto 1 1",
+              "87: int 0",
+              "88: byte \"dispenser_status\"",
+              "89: app_global_get_ex",
+              "90: assert",
+              "91: !",
+              "92: assert",
+              "95: frame_dig -1",
+              "96: Gtxns Amount",
+              "97: int 100000",
+              "98: >=",
+              "99: assert",
+              "102: global CurrentApplicationAddress",
+              "115: itxn_begin",
+              "118: int 0",
+              "119: itxn_field ConfigAssetDefaultFrozen",
+              "120: dup",
+              "121: itxn_field ConfigAssetClawback",
+              "122: dup",
+              "123: itxn_field ConfigAssetReserve",
+              "124: itxn_field ConfigAssetManager",
+              "127: int 6",
+              "128: itxn_field ConfigAssetDecimals",
+              "131: int 18446744073709551615",
+              "132: itxn_field ConfigAssetTotal",
+              "135: byte \"MK_USDCA\"",
+              "136: itxn_field ConfigAssetUnitName",
+              "139: byte \"MOCK USDC_A\"",
+              "140: itxn_field ConfigAssetName",
+              "143: int acfg",
+              "144: itxn_field TypeEnum",
+              "147: int 0",
+              "148: itxn_field Fee",
+              "161: itxn_submit",
+              "164: byte \"asset_id\"",
+              "177: itxn CreatedAssetID",
+              "180: app_global_put",
+              "183: int 0",
+              "184: byte \"asset_id\"",
+              "185: app_global_get_ex",
+              "186: assert",
+              "187: itob",
+              "188: byte \"Mock USDC_A created \"",
+              "189: swap",
+              "190: concat",
+              "191: log",
+              "194: byte \"dispenser_status\"",
+              "195: int 1",
+              "196: app_global_put",
+              "199: int 0",
+              "200: byte \"asset_id\"",
+              "201: app_global_get_ex",
+              "202: assert",
+              "203: retsub"
+            ],
+            [
+              "40: itob",
+              "41: byte 0x151f7c75",
+              "42: swap",
+              "43: concat",
+              "44: log",
+              "45: int 1",
+              "46: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 2 -> 13 -> 3 -> 4 -> 8 -> 12 -> 9",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "283: __init__:",
+              "286: proto 0 0",
+              "289: byte \"dispenser_name\"",
+              "290: byte \"USDC_A dispenser localnet\"",
+              "291: app_global_put",
+              "294: byte \"asset_id\"",
+              "295: int 0",
+              "296: app_global_put",
+              "299: byte \"dispenser_status\"",
+              "300: int 0",
+              "301: app_global_put",
+              "302: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method dispenser_create(pay)uint64",
+              "14: method dispense(uint64)void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_dispenser_create_route@4 main_dispense_route@5"
+            ],
+            [
+              "48: main_dispense_route@5:",
+              "51: txn OnCompletion",
+              "52: !",
+              "53: assert",
+              "54: txn ApplicationID",
+              "55: assert",
+              "58: txna ApplicationArgs 1",
+              "59: btoi",
+              "62: callsub dispense"
+            ],
+            [
+              "207: dispense:",
+              "211: proto 1 0",
+              "214: int 0",
+              "215: byte \"dispenser_status\"",
+              "216: app_global_get_ex",
+              "217: assert",
+              "218: int 1",
+              "219: ==",
+              "220: assert",
+              "223: frame_dig -1",
+              "224: int 10000000000",
+              "225: <",
+              "226: assert",
+              "229: int 0",
+              "230: byte \"asset_id\"",
+              "231: app_global_get_ex",
+              "232: assert",
+              "235: txn Sender",
+              "236: dig 1",
+              "237: asset_holding_get AssetBalance",
+              "238: bury 1",
+              "239: assert",
+              "242: global CurrentApplicationAddress",
+              "251: itxn_begin",
+              "254: txn Sender",
+              "255: itxn_field AssetReceiver",
+              "256: itxn_field AssetSender",
+              "257: frame_dig -1",
+              "258: itxn_field AssetAmount",
+              "259: itxn_field XferAsset",
+              "262: int axfer",
+              "263: itxn_field TypeEnum",
+              "266: int 0",
+              "267: itxn_field Fee",
+              "276: itxn_submit",
+              "279: retsub"
+            ],
+            [
+              "63: int 1",
+              "64: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 2 -> 13 -> 3 -> 10",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "283: __init__:",
+              "286: proto 0 0",
+              "289: byte \"dispenser_name\"",
+              "290: byte \"USDC_A dispenser localnet\"",
+              "291: app_global_put",
+              "294: byte \"asset_id\"",
+              "295: int 0",
+              "296: app_global_put",
+              "299: byte \"dispenser_status\"",
+              "300: int 0",
+              "301: app_global_put",
+              "302: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "66: main_bare_routing@8:",
+              "69: txn OnCompletion",
+              "70: !",
+              "71: assert",
+              "72: txn ApplicationID",
+              "73: !",
+              "74: assert",
+              "75: int 1",
+              "76: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 4 -> 6 -> 11 -> 7",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method dispenser_create(pay)uint64",
+              "14: method dispense(uint64)void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_dispenser_create_route@4 main_dispense_route@5"
+            ],
+            [
+              "19: main_dispenser_create_route@4:",
+              "22: txn OnCompletion",
+              "23: !",
+              "24: assert",
+              "25: txn ApplicationID",
+              "26: assert",
+              "29: txn GroupIndex",
+              "30: int 1",
+              "31: -",
+              "32: dup",
+              "33: Gtxns TypeEnum",
+              "34: int pay",
+              "35: ==",
+              "36: assert",
+              "39: callsub dispenser_create"
+            ],
+            [
+              "80: dispenser_create:",
+              "84: proto 1 1",
+              "87: int 0",
+              "88: byte \"dispenser_status\"",
+              "89: app_global_get_ex",
+              "90: assert",
+              "91: !",
+              "92: assert",
+              "95: frame_dig -1",
+              "96: Gtxns Amount",
+              "97: int 100000",
+              "98: >=",
+              "99: assert",
+              "102: global CurrentApplicationAddress",
+              "115: itxn_begin",
+              "118: int 0",
+              "119: itxn_field ConfigAssetDefaultFrozen",
+              "120: dup",
+              "121: itxn_field ConfigAssetClawback",
+              "122: dup",
+              "123: itxn_field ConfigAssetReserve",
+              "124: itxn_field ConfigAssetManager",
+              "127: int 6",
+              "128: itxn_field ConfigAssetDecimals",
+              "131: int 18446744073709551615",
+              "132: itxn_field ConfigAssetTotal",
+              "135: byte \"MK_USDCA\"",
+              "136: itxn_field ConfigAssetUnitName",
+              "139: byte \"MOCK USDC_A\"",
+              "140: itxn_field ConfigAssetName",
+              "143: int acfg",
+              "144: itxn_field TypeEnum",
+              "147: int 0",
+              "148: itxn_field Fee",
+              "161: itxn_submit",
+              "164: byte \"asset_id\"",
+              "177: itxn CreatedAssetID",
+              "180: app_global_put",
+              "183: int 0",
+              "184: byte \"asset_id\"",
+              "185: app_global_get_ex",
+              "186: assert",
+              "187: itob",
+              "188: byte \"Mock USDC_A created \"",
+              "189: swap",
+              "190: concat",
+              "191: log",
+              "194: byte \"dispenser_status\"",
+              "195: int 1",
+              "196: app_global_put",
+              "199: int 0",
+              "200: byte \"asset_id\"",
+              "201: app_global_get_ex",
+              "202: assert",
+              "203: retsub"
+            ],
+            [
+              "40: itob",
+              "41: byte 0x151f7c75",
+              "42: swap",
+              "43: concat",
+              "44: log",
+              "45: int 1",
+              "46: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 4 -> 8 -> 12 -> 9",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method dispenser_create(pay)uint64",
+              "14: method dispense(uint64)void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_dispenser_create_route@4 main_dispense_route@5"
+            ],
+            [
+              "48: main_dispense_route@5:",
+              "51: txn OnCompletion",
+              "52: !",
+              "53: assert",
+              "54: txn ApplicationID",
+              "55: assert",
+              "58: txna ApplicationArgs 1",
+              "59: btoi",
+              "62: callsub dispense"
+            ],
+            [
+              "207: dispense:",
+              "211: proto 1 0",
+              "214: int 0",
+              "215: byte \"dispenser_status\"",
+              "216: app_global_get_ex",
+              "217: assert",
+              "218: int 1",
+              "219: ==",
+              "220: assert",
+              "223: frame_dig -1",
+              "224: int 10000000000",
+              "225: <",
+              "226: assert",
+              "229: int 0",
+              "230: byte \"asset_id\"",
+              "231: app_global_get_ex",
+              "232: assert",
+              "235: txn Sender",
+              "236: dig 1",
+              "237: asset_holding_get AssetBalance",
+              "238: bury 1",
+              "239: assert",
+              "242: global CurrentApplicationAddress",
+              "251: itxn_begin",
+              "254: txn Sender",
+              "255: itxn_field AssetReceiver",
+              "256: itxn_field AssetSender",
+              "257: frame_dig -1",
+              "258: itxn_field AssetAmount",
+              "259: itxn_field XferAsset",
+              "262: int axfer",
+              "263: itxn_field TypeEnum",
+              "266: int 0",
+              "267: itxn_field Fee",
+              "276: itxn_submit",
+              "279: retsub"
+            ],
+            [
+              "63: int 1",
+              "64: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 10",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "66: main_bare_routing@8:",
+              "69: txn OnCompletion",
+              "70: !",
+              "71: assert",
+              "72: txn ApplicationID",
+              "73: !",
+              "74: assert",
+              "75: int 1",
+              "76: return"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"group-size-check\", Impact: High, Confidence: High\nDescription: Usage of absolute indexes without validating GroupSize\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#missing-groupsize-validation\n",
+      "check": "group-size-check",
+      "impact": "High",
+      "confidence": "High",
+      "help": "- Avoid using absolute indexes. Validate GroupSize if used.\n- Favor using ARC-4 ABI and relative indexes for group transactions.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 6,
+      "description": "\nCheck: \"rekey-to\", Impact: High, Confidence: High\nDescription: Rekeyable Logic Signatures\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#rekeyable-logicsig\n",
+      "check": "rekey-to",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Validate `RekeyTo` field in the LogicSig.",
+      "paths": [
+        {
+          "short": "0 -> 1 -> 2 -> 13 -> 3 -> 4 -> 6 -> 11 -> 7",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "283: __init__:",
+              "286: proto 0 0",
+              "289: byte \"dispenser_name\"",
+              "290: byte \"USDC_A dispenser localnet\"",
+              "291: app_global_put",
+              "294: byte \"asset_id\"",
+              "295: int 0",
+              "296: app_global_put",
+              "299: byte \"dispenser_status\"",
+              "300: int 0",
+              "301: app_global_put",
+              "302: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method dispenser_create(pay)uint64",
+              "14: method dispense(uint64)void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_dispenser_create_route@4 main_dispense_route@5"
+            ],
+            [
+              "19: main_dispenser_create_route@4:",
+              "22: txn OnCompletion",
+              "23: !",
+              "24: assert",
+              "25: txn ApplicationID",
+              "26: assert",
+              "29: txn GroupIndex",
+              "30: int 1",
+              "31: -",
+              "32: dup",
+              "33: Gtxns TypeEnum",
+              "34: int pay",
+              "35: ==",
+              "36: assert",
+              "39: callsub dispenser_create"
+            ],
+            [
+              "80: dispenser_create:",
+              "84: proto 1 1",
+              "87: int 0",
+              "88: byte \"dispenser_status\"",
+              "89: app_global_get_ex",
+              "90: assert",
+              "91: !",
+              "92: assert",
+              "95: frame_dig -1",
+              "96: Gtxns Amount",
+              "97: int 100000",
+              "98: >=",
+              "99: assert",
+              "102: global CurrentApplicationAddress",
+              "115: itxn_begin",
+              "118: int 0",
+              "119: itxn_field ConfigAssetDefaultFrozen",
+              "120: dup",
+              "121: itxn_field ConfigAssetClawback",
+              "122: dup",
+              "123: itxn_field ConfigAssetReserve",
+              "124: itxn_field ConfigAssetManager",
+              "127: int 6",
+              "128: itxn_field ConfigAssetDecimals",
+              "131: int 18446744073709551615",
+              "132: itxn_field ConfigAssetTotal",
+              "135: byte \"MK_USDCA\"",
+              "136: itxn_field ConfigAssetUnitName",
+              "139: byte \"MOCK USDC_A\"",
+              "140: itxn_field ConfigAssetName",
+              "143: int acfg",
+              "144: itxn_field TypeEnum",
+              "147: int 0",
+              "148: itxn_field Fee",
+              "161: itxn_submit",
+              "164: byte \"asset_id\"",
+              "177: itxn CreatedAssetID",
+              "180: app_global_put",
+              "183: int 0",
+              "184: byte \"asset_id\"",
+              "185: app_global_get_ex",
+              "186: assert",
+              "187: itob",
+              "188: byte \"Mock USDC_A created \"",
+              "189: swap",
+              "190: concat",
+              "191: log",
+              "194: byte \"dispenser_status\"",
+              "195: int 1",
+              "196: app_global_put",
+              "199: int 0",
+              "200: byte \"asset_id\"",
+              "201: app_global_get_ex",
+              "202: assert",
+              "203: retsub"
+            ],
+            [
+              "40: itob",
+              "41: byte 0x151f7c75",
+              "42: swap",
+              "43: concat",
+              "44: log",
+              "45: int 1",
+              "46: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 2 -> 13 -> 3 -> 4 -> 8 -> 12 -> 9",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "283: __init__:",
+              "286: proto 0 0",
+              "289: byte \"dispenser_name\"",
+              "290: byte \"USDC_A dispenser localnet\"",
+              "291: app_global_put",
+              "294: byte \"asset_id\"",
+              "295: int 0",
+              "296: app_global_put",
+              "299: byte \"dispenser_status\"",
+              "300: int 0",
+              "301: app_global_put",
+              "302: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method dispenser_create(pay)uint64",
+              "14: method dispense(uint64)void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_dispenser_create_route@4 main_dispense_route@5"
+            ],
+            [
+              "48: main_dispense_route@5:",
+              "51: txn OnCompletion",
+              "52: !",
+              "53: assert",
+              "54: txn ApplicationID",
+              "55: assert",
+              "58: txna ApplicationArgs 1",
+              "59: btoi",
+              "62: callsub dispense"
+            ],
+            [
+              "207: dispense:",
+              "211: proto 1 0",
+              "214: int 0",
+              "215: byte \"dispenser_status\"",
+              "216: app_global_get_ex",
+              "217: assert",
+              "218: int 1",
+              "219: ==",
+              "220: assert",
+              "223: frame_dig -1",
+              "224: int 10000000000",
+              "225: <",
+              "226: assert",
+              "229: int 0",
+              "230: byte \"asset_id\"",
+              "231: app_global_get_ex",
+              "232: assert",
+              "235: txn Sender",
+              "236: dig 1",
+              "237: asset_holding_get AssetBalance",
+              "238: bury 1",
+              "239: assert",
+              "242: global CurrentApplicationAddress",
+              "251: itxn_begin",
+              "254: txn Sender",
+              "255: itxn_field AssetReceiver",
+              "256: itxn_field AssetSender",
+              "257: frame_dig -1",
+              "258: itxn_field AssetAmount",
+              "259: itxn_field XferAsset",
+              "262: int axfer",
+              "263: itxn_field TypeEnum",
+              "266: int 0",
+              "267: itxn_field Fee",
+              "276: itxn_submit",
+              "279: retsub"
+            ],
+            [
+              "63: int 1",
+              "64: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 2 -> 13 -> 3 -> 10",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "283: __init__:",
+              "286: proto 0 0",
+              "289: byte \"dispenser_name\"",
+              "290: byte \"USDC_A dispenser localnet\"",
+              "291: app_global_put",
+              "294: byte \"asset_id\"",
+              "295: int 0",
+              "296: app_global_put",
+              "299: byte \"dispenser_status\"",
+              "300: int 0",
+              "301: app_global_put",
+              "302: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "66: main_bare_routing@8:",
+              "69: txn OnCompletion",
+              "70: !",
+              "71: assert",
+              "72: txn ApplicationID",
+              "73: !",
+              "74: assert",
+              "75: int 1",
+              "76: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 4 -> 6 -> 11 -> 7",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method dispenser_create(pay)uint64",
+              "14: method dispense(uint64)void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_dispenser_create_route@4 main_dispense_route@5"
+            ],
+            [
+              "19: main_dispenser_create_route@4:",
+              "22: txn OnCompletion",
+              "23: !",
+              "24: assert",
+              "25: txn ApplicationID",
+              "26: assert",
+              "29: txn GroupIndex",
+              "30: int 1",
+              "31: -",
+              "32: dup",
+              "33: Gtxns TypeEnum",
+              "34: int pay",
+              "35: ==",
+              "36: assert",
+              "39: callsub dispenser_create"
+            ],
+            [
+              "80: dispenser_create:",
+              "84: proto 1 1",
+              "87: int 0",
+              "88: byte \"dispenser_status\"",
+              "89: app_global_get_ex",
+              "90: assert",
+              "91: !",
+              "92: assert",
+              "95: frame_dig -1",
+              "96: Gtxns Amount",
+              "97: int 100000",
+              "98: >=",
+              "99: assert",
+              "102: global CurrentApplicationAddress",
+              "115: itxn_begin",
+              "118: int 0",
+              "119: itxn_field ConfigAssetDefaultFrozen",
+              "120: dup",
+              "121: itxn_field ConfigAssetClawback",
+              "122: dup",
+              "123: itxn_field ConfigAssetReserve",
+              "124: itxn_field ConfigAssetManager",
+              "127: int 6",
+              "128: itxn_field ConfigAssetDecimals",
+              "131: int 18446744073709551615",
+              "132: itxn_field ConfigAssetTotal",
+              "135: byte \"MK_USDCA\"",
+              "136: itxn_field ConfigAssetUnitName",
+              "139: byte \"MOCK USDC_A\"",
+              "140: itxn_field ConfigAssetName",
+              "143: int acfg",
+              "144: itxn_field TypeEnum",
+              "147: int 0",
+              "148: itxn_field Fee",
+              "161: itxn_submit",
+              "164: byte \"asset_id\"",
+              "177: itxn CreatedAssetID",
+              "180: app_global_put",
+              "183: int 0",
+              "184: byte \"asset_id\"",
+              "185: app_global_get_ex",
+              "186: assert",
+              "187: itob",
+              "188: byte \"Mock USDC_A created \"",
+              "189: swap",
+              "190: concat",
+              "191: log",
+              "194: byte \"dispenser_status\"",
+              "195: int 1",
+              "196: app_global_put",
+              "199: int 0",
+              "200: byte \"asset_id\"",
+              "201: app_global_get_ex",
+              "202: assert",
+              "203: retsub"
+            ],
+            [
+              "40: itob",
+              "41: byte 0x151f7c75",
+              "42: swap",
+              "43: concat",
+              "44: log",
+              "45: int 1",
+              "46: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 4 -> 8 -> 12 -> 9",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method dispenser_create(pay)uint64",
+              "14: method dispense(uint64)void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_dispenser_create_route@4 main_dispense_route@5"
+            ],
+            [
+              "48: main_dispense_route@5:",
+              "51: txn OnCompletion",
+              "52: !",
+              "53: assert",
+              "54: txn ApplicationID",
+              "55: assert",
+              "58: txna ApplicationArgs 1",
+              "59: btoi",
+              "62: callsub dispense"
+            ],
+            [
+              "207: dispense:",
+              "211: proto 1 0",
+              "214: int 0",
+              "215: byte \"dispenser_status\"",
+              "216: app_global_get_ex",
+              "217: assert",
+              "218: int 1",
+              "219: ==",
+              "220: assert",
+              "223: frame_dig -1",
+              "224: int 10000000000",
+              "225: <",
+              "226: assert",
+              "229: int 0",
+              "230: byte \"asset_id\"",
+              "231: app_global_get_ex",
+              "232: assert",
+              "235: txn Sender",
+              "236: dig 1",
+              "237: asset_holding_get AssetBalance",
+              "238: bury 1",
+              "239: assert",
+              "242: global CurrentApplicationAddress",
+              "251: itxn_begin",
+              "254: txn Sender",
+              "255: itxn_field AssetReceiver",
+              "256: itxn_field AssetSender",
+              "257: frame_dig -1",
+              "258: itxn_field AssetAmount",
+              "259: itxn_field XferAsset",
+              "262: int axfer",
+              "263: itxn_field TypeEnum",
+              "266: int 0",
+              "267: itxn_field Fee",
+              "276: itxn_submit",
+              "279: retsub"
+            ],
+            [
+              "63: int 1",
+              "64: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 10",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.usdca_mock.contract.UsdcaMock.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "66: main_bare_routing@8:",
+              "69: txn OnCompletion",
+              "70: !",
+              "71: assert",
+              "72: txn ApplicationID",
+              "73: !",
+              "74: assert",
+              "75: int 1",
+              "76: return"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ export interface EventTypeJson {
     begin_date: Date;
     end_date: Date;
     event_image: string;
+    image:string;
     event_name: string;
     event_description: string;
     type_name:string;

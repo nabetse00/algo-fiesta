@@ -1,6 +1,6 @@
 import "@mantine/core/styles.css";
 import { useDisclosure } from "@mantine/hooks";
-import { AppShell, Burger, Button, Group, MantineColorsTuple, MantineProvider, createTheme } from "@mantine/core";
+import { AppShell, Burger, Button, Group, Image, MantineColorsTuple, MantineProvider, createTheme } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 
 import { SegmentedControl } from "@mantine/core";
@@ -11,7 +11,6 @@ import {
   IconBellRinging,
   IconMessages,
   IconFingerprint,
-  IconKey,
   IconDatabaseImport,
   IconReceipt2,
   // IconLogout,
@@ -77,7 +76,7 @@ if (import.meta.env.VITE_ALGOD_NETWORK === "") {
     {
       id: PROVIDER_ID.WALLETCONNECT,
       clientStatic: WalletConnectModalSign,
-      clientOptions: { 
+      clientOptions: {
         projectId: import.meta.env.VITE_WALLET_CONNECT_ID,
         metadata: {
           name: "AlgoFiesta",
@@ -92,10 +91,9 @@ if (import.meta.env.VITE_ALGOD_NETWORK === "") {
 
 const tabs = {
   tickets: [
-    { link: "", label: "Buy Tickets", icon: IconBellRinging, uri: "" },
+    { link: "", label: "Buy Tickets", icon: IconBellRinging, uri: "/list_events" },
     { link: "", label: "List events", icon: IconFingerprint, uri: "/list_events" },
-    { link: "", label: "List your tickets", icon: IconKey, uri: "" },
-    { link: "", label: "Withdraw ticket as NFT", icon: IconDatabaseImport, uri: "" },
+    { link: "", label: "List your tickets", icon: IconDatabaseImport, uri: "list_user_tickets/" },
     { link: "", label: "Dispenser", icon: IconReceipt2, uri: "/dispenser" },
   ],
   events: [
@@ -130,7 +128,7 @@ export default function App() {
   const [active, setActive] = useState("Buy Tickets");
   const { activeAddress } = useWallet();
   const [opened, { toggle }] = useDisclosure();
-  const [isOpenedModal, { open: openModal, close:closeModal }] = useDisclosure(false);
+  const [isOpenedModal, { open: openModal, close: closeModal }] = useDisclosure(false);
   const navigate = useNavigate();
 
   const algodConfig = getAlgodConfigFromViteEnvironment();
@@ -170,7 +168,7 @@ export default function App() {
           <AppShell.Header>
             <Group h="100%" px="md">
               <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-              <img src={AlgoFiestaLogo} width={300} />
+              <Image h={120} src={AlgoFiestaLogo} width={300} onClick={() => navigate("/")} />
             </Group>
           </AppShell.Header>
           <AppShell.Navbar>
@@ -183,12 +181,9 @@ export default function App() {
                   fullWidth
                   onClick={() => openModal()}
                 >
-                  {activeAddress?activeAddress:"Connect your wallet"}
+                  {activeAddress ? activeAddress : "Connect your wallet"}
                 </Button>
-                <ConnectWallet
-                  opened={isOpenedModal}
-                  close={closeModal}
-                />
+                <ConnectWallet opened={isOpenedModal} close={closeModal} />
 
                 <SegmentedControl
                   mt="md"

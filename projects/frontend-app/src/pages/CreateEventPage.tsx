@@ -1,4 +1,4 @@
-import { Button, Card, Fieldset, FileInput, Group, LoadingOverlay, Modal, NumberInput, TextInput, rem } from "@mantine/core";
+import { Button, Card, Fieldset, FileInput, Group, LoadingOverlay, Modal, NumberInput, TextInput, rem, Title, Divider } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import "@mantine/dates/styles.css";
@@ -34,6 +34,7 @@ import { EventManagerClient } from "../utils/eventManagerClient";
 import { useDisclosure } from "@mantine/hooks";
 import { CodeHighlight } from "@mantine/code-highlight";
 import "@mantine/code-highlight/styles.css";
+import { isRouteErrorResponse, useRouteError } from "react-router-dom";
 
 const MIN_DURATION_HR = 24;
 const MIN_DURATION_MS = MIN_DURATION_HR * 3600 * 1000;
@@ -68,8 +69,8 @@ function validateTicket({ name, description, price, supply, maxPerUser }: ticket
   if (maxPerUser > supply) return false;
   return true;
 }
-
-export default function CreateEventPage() {
+Component.displayName = "CreateEventPage";
+export function Component() {
   const [loading, setLoading] = useState(false);
   const [createStatus, setCreateStatus] = useState("init");
   const { signer, activeAddress } = useWallet();
@@ -168,6 +169,7 @@ export default function CreateEventPage() {
       begin_date: values.beginDate,
       end_date: values.endDate,
       event_image: imageCid,
+      image: `ipfs://${imageCid}`,
       event_name: values.name,
       event_description: values.description,
       type_name: "",
@@ -268,7 +270,7 @@ export default function CreateEventPage() {
       soldAmounts: [] as number[],
     };
     for (const t of tickets) {
-      ticketsData.ticketUri.push(`ipfs://${t.uri}`);
+      ticketsData.ticketUri.push(`ipfs://${t.uri}#arc3`);
       //const hashArr =  new TextEncoder().encode(t.hash)
       const hashArr = Uint8Array.from(Buffer.from(t.hash, "hex"));
       ticketsData.ticketUriHash.push(hashArr);
@@ -333,13 +335,15 @@ export default function CreateEventPage() {
     }
     setCreateStatus("All Done!");
 
-    console.log("done");
+    console.log("Creating event done !");
     setLoading(false);
     open();
   }
 
   return (
     <>
+      <Title order={2}>Create your event!</Title>
+      <Divider my="md" size="lg"/>
       {activeAddress ? (
         <Card style={{ width: 800 }}>
           <LoadingOverlay
@@ -483,3 +487,18 @@ export default function CreateEventPage() {
     </>
   );
 }
+
+
+export function ErrorBoundary() {
+  let error = useRouteError();
+  return isRouteErrorResponse(error) ? (
+    <h1>
+      {error.status} {error.statusText}
+    </h1>
+  ) : (
+    <h1>{(error as any).message || error}</h1>
+  );
+}
+
+// If you want to customize the component display name in React dev tools:
+ErrorBoundary.displayName = "CreateEventPageErrorBoundary";

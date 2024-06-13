@@ -33,7 +33,7 @@ export default function dispense() {
     setLoading(true);
     try {
       const suggestedParams = await algodClient.getTransactionParams().do();
-
+      console.log(`${USDC_A_ID} --- ${activeAddress}`)
       const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
         assetIndex: USDC_A_ID,
         from: activeAddress!,

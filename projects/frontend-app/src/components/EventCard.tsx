@@ -6,12 +6,14 @@ import { useEffect, useState } from "react";
 import {
   ASSETS_BOX_PREFIX,
   OWNER_BOX_PREFIX,
+  OwnerBox,
   SEATS_BOX_PREFIX,
   TICKET_TYPES_BOX_PREFIX,
   TicketTypeBox,
   computeAssetsArrayMbr,
   computeOwnerBoxMbr,
   computeSeatsArrayMbr,
+  decodeOwnerBox,
   decodeTicketTypeBox,
   encodeBoxNameUint8ArrayFromAddress,
   encodeBoxNameUint8ArrayFromUint64,
@@ -90,6 +92,8 @@ export default function EventCard({ appId }: props) {
     tTypes: [],
     tTypesJson: [],
   });
+
+  const [ownerBox, setOwnerBox] = useState<OwnerBox>();
   async function getEventData() {
     const managerClient = new EventManagerClient(
       {
@@ -159,6 +163,7 @@ export default function EventCard({ appId }: props) {
       console.error("Cannot buy 0 tickets");
       return;
     }
+
     const amountToBuy = Number(buyData.amount);
     const index = buyData.index;
     // buy tickets
@@ -168,7 +173,7 @@ export default function EventCard({ appId }: props) {
     // const supply = typeBox.supply;
     const seats: Uint8Array[] = [];
     const ticketsSold = Number(typeBox.sold);
-    for (let i = 0; i < amountToBuy; i++) {
+    for (let i = 1; i <= amountToBuy; i++) {
       seats.push(encodeSeatAsUint8Array(i + ticketsSold));
     }
 
@@ -218,7 +223,7 @@ export default function EventCard({ appId }: props) {
       suggestedParams,
     });
 
-    // simulate buy tickets
+    //buy tickets
     const result = await client
       .buyTicket(
         {
@@ -247,13 +252,110 @@ export default function EventCard({ appId }: props) {
     }
     notifications.show({
       title: "buy tickets successfull",
-      message: `Response ${JSON.stringify(result.confirmation)}`,
+      message: `Response ${JSON.stringify(result.transaction.txID)}`,
       color: "green",
       icon: checkIcon,
     });
+
+    const ob_after = await readOwnerBox();
+    if (ob_after === undefined) {
+      return;
+    }
+    for (const asaid of ob_after.asaIds) {
+      const info = await algodClient
+        .accountAssetInformation(activeAddress!, asaid)
+        .do()
+        .catch((_) => {
+          console.log(`asset ${asaid} must be claimed`);
+          return undefined;
+        });
+      if (info) {
+        console.log(`asset info ${JSON.stringify(info)}`);
+        continue
+      }
+
+      const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+        assetIndex: Number(asaid),
+        from: activeAddress!,
+        to: activeAddress!,
+        amount: 0,
+        suggestedParams: await algodClient.getTransactionParams().do(),
+      });
+
+      const txn = client.compose();
+      txn.addTransaction(transaction);
+      txn.claimAsset(
+        { assetId: asaid, owner: activeAddress! },
+        { assets: [Number(asaid)], boxes: [ref_owner], sendParams: { fee: AlgoAmount.MicroAlgos(2_000) } }
+      );
+      const result = await txn.execute().catch((e: Error) => {
+        notifications.show({
+          title: "Error on claiming asset",
+          message: `Error on claim asset ${asaid}: ${e.message}`,
+          color: "red",
+          icon: xIcon,
+        });
+        console.error(`Error on claim asset ${asaid}: ${e.message}`);
+        return undefined;
+      });
+      if (result === undefined) {
+        continue;
+      }
+      notifications.show({
+        title: "Claim asset sucessful",
+        message: `Response ${result.txIds}`,
+        color: "green",
+        icon: checkIcon,
+      });
+    }
+
     setBuyData({ index: 0, amount: 0 });
     close();
   }
+
+  async function readOwnerBox() {
+    const client = new EventManagerClient(
+      {
+        resolveBy: "id",
+        id: appId,
+        sender: { signer, addr: activeAddress } as TransactionSignerAccount,
+      },
+      algodClient
+    );
+    // const appRef = await client.appClient.getAppReference();
+    const owner_box_val = await client.appClient
+      .getBoxValue(encodeBoxNameUint8ArrayFromAddress(OWNER_BOX_PREFIX, activeAddress!))
+      .catch((e) => {
+        console.error(e);
+        return undefined;
+      });
+    if (owner_box_val === undefined) {
+      return undefined;
+    }
+    const ob = decodeOwnerBox(owner_box_val);
+    // for (const asaid of ob.asaIds) {
+    //   console.log(asaid);
+    //   const info = await algodClient
+    //     .accountAssetInformation(activeAddress!, asaid)
+    //     .do()
+    //     .catch((_) => {
+    //       console.log(`asset ${asaid} must be claimed`);
+    //       return undefined;
+    //     });
+    //   if (info) {
+    //     console.log(`asset info ${JSON.stringify(info)}`);
+    //   }
+    // }
+    return ob;
+  }
+
+  useEffect(() => {
+    if (activeAddress) {
+      readOwnerBox().then((ob) => {
+        setOwnerBox(ob);
+      });
+    }
+  }, [activeAddress]);
 
   return (
     <>
@@ -336,9 +438,9 @@ export default function EventCard({ appId }: props) {
         >
           <NumberInput
             allowNegative={false}
-            label="number of tickets to buy"
+            label={`Number of tickets to buy [You already own ${Number(ownerBox ? ownerBox.boughtTickets[buyData.index] : 0)}]`}
             value={buyData.amount}
-            max={event.tTypesJson[buyData.index].maxPerUser}
+            max={event.tTypesJson[buyData.index].maxPerUser - Number(ownerBox ? ownerBox.boughtTickets[buyData.index] : 0)}
             onChange={(ref) => {
               setBuyData({ index: buyData.index, amount: Number(ref) });
             }}

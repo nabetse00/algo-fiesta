@@ -1,0 +1,966 @@
+{
+  "success": false,
+  "error": null,
+  "result": [
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"unprotected-deletable\", Impact: High, Confidence: High\nDescription: Unprotected Deletable Applications\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#unprotected-deletable-application\n",
+      "check": "unprotected-deletable",
+      "impact": "High",
+      "confidence": "High",
+      "help": "- Avoid deletable applications.\n- Add access controls to the vulnerable method.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"unprotected-updatable\", Impact: High, Confidence: High\nDescription: Unprotected Upgradable Applications\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#unprotected-updatable-application\n",
+      "check": "unprotected-updatable",
+      "impact": "High",
+      "confidence": "High",
+      "help": "- Avoid upgradable applications.\n- Add access controls to the vulnerable method.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"can-close-account\", Impact: High, Confidence: High\nDescription: Missing CloseRemainderTo field Validation\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#missing-closeremainderto-field-validation\n",
+      "check": "can-close-account",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Validate `CloseRemainderTo` field in the LogicSig.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"can-close-asset\", Impact: High, Confidence: High\nDescription: Missing AssetCloseTo Field Validation\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#missing-assetcloseto-field-validation\n",
+      "check": "can-close-asset",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Validate `AssetCloseTo` field in the LogicSig.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"is-deletable\", Impact: High, Confidence: High\nDescription: Deletable Applications\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#deletable-application\n",
+      "check": "is-deletable",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Do not approve `DeleteApplication` type application calls.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"is-updatable\", Impact: High, Confidence: High\nDescription: Upgradable Applications\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#upgradable-application\n",
+      "check": "is-updatable",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Do not approve `UpdateApplication` type application calls.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 6,
+      "description": "\nCheck: \"missing-fee-check\", Impact: High, Confidence: High\nDescription: Missing Fee Field Validation\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#missing-fee-field-validation\n",
+      "check": "missing-fee-check",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Validate `Fee` field in the LogicSig.",
+      "paths": [
+        {
+          "short": "0 -> 1 -> 2 -> 20 -> 3 -> 4 -> 6 -> 11 -> 14 -> 12 -> 15 -> 18 -> 16 -> 18 -> 17 -> 13 -> 7",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.event_factory.contract.EventFactory.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "427: __init__:",
+              "430: proto 0 0",
+              "433: byte \"last_event_manager\"",
+              "434: int 0",
+              "435: app_global_put",
+              "438: byte \"factory_owner\"",
+              "439: txn Sender",
+              "440: app_global_put",
+              "443: byte \"Event Factory created\"",
+              "444: log",
+              "445: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method create_event_manager(pay)uint64",
+              "14: method withdraw()void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_create_event_manager_route@4 main_withdraw_route@5"
+            ],
+            [
+              "19: main_create_event_manager_route@4:",
+              "22: txn OnCompletion",
+              "23: !",
+              "24: assert",
+              "25: txn ApplicationID",
+              "26: assert",
+              "29: txn GroupIndex",
+              "30: int 1",
+              "31: -",
+              "32: dup",
+              "33: Gtxns TypeEnum",
+              "34: int pay",
+              "35: ==",
+              "36: assert",
+              "39: callsub create_event_manager"
+            ],
+            [
+              "74: create_event_manager:",
+              "78: proto 1 1",
+              "81: int 2",
+              "82: callsub security_checks"
+            ],
+            [
+              "275: security_checks:",
+              "282: proto 1 0",
+              "285: global GroupSize",
+              "286: frame_dig -1",
+              "287: ==",
+              "288: assert",
+              "291: txn RekeyTo",
+              "292: global ZeroAddress",
+              "293: ==",
+              "294: assert",
+              "295: retsub"
+            ],
+            [
+              "85: frame_dig -1",
+              "86: Gtxns Amount",
+              "91: int 2029800",
+              "97: >=",
+              "105: assert",
+              "108: global CurrentApplicationAddress",
+              "121: itxn_begin",
+              "124: int 1",
+              "125: itxn_field ExtraProgramPages",
+              "128: int NoOp",
+              "129: itxn_field OnCompletion",
+              "132: int 0",
+              "133: itxn_field LocalNumUint",
+              "136: int 0",
+              "137: itxn_field LocalNumByteSlice",
+              "140: int 5",
+              "141: itxn_field GlobalNumUint",
+              "144: int 2",
+              "145: itxn_field GlobalNumByteSlice",
+              "148: byte 0x0a810143",
+              "149: itxn_field ClearStateProgramPages",
+              "152: byte 0x0a2009000108200204030605260e0c6576656e745f737461747573000a757364635f61737365740b6576656e745f6f776e65720f6c6173745f747970655f696e6465780b6576656e745f626567696e096576656e745f656e64046e616d650374742d0120036f742d0200000306810102000631184000038807f0311b4100de80044290fab48004d2783a8980046d95748780047140c2538004b7355fd1361a008e05000100430076008c00a50031191444311844361a01570200361a0217c01c361a0317c030361a0417361a0517361a06361a07361a08361a09361a0a361a0b3116230949381023124488007a234331191444311844361a0117c01c361a0217361a0317361a04311621040949381023124431162309493810210512448801f0234331191444311844361a0117c01c361a021788063f234331191444311844361a0117c01c361a0217361a0388069f2343311914443118448806b62343311914443118144423438a0c00292104880125320a8bff38074b0112448bff3820320312444973014c4e02442228654414448bf5320313442b8bf567b149b200b21422b2128bf6b2112105b21022b201b32a8bf667320781c0d102088bf70c448bf78180a305088bf80c4427058bf76727068bf8678bf92259228b038b020c498c004100758bf95702008b00448b03494e0221040b4b014c594a59210408584c8bfa5702004b01250b25584c8bfb5702004b01240b494e0224584c8bfc5702004b0124584c8bfd5702004b0124584c8bfe5702004c2458800200424f06504f04504f03504f02504c504f02504b014c8800564823088c0342ff8027078bf46722270465448b020827044c6723880054320a7301448b01098bff3808124480175b4556454e54204d414e414745525d2053746172746564b0898a010032048bff1244312032031244898a020127088bfe8800068bffbf8bff898a02018bff168bfe4c50898a01002228654c494f02448bff1341003e288bff678b001680235b4556454e54204d414e4745525d2053746174757320557064617465642066726f6d204c502709508002746f502709508bff1650b0898a060022470229210688ff7988015f320a498bfe38074b0112448bfe38203203124473014427088bfc88ff7949880174498bfd22598bfb124449572a08174c573a08178bfb08494f020e4481c8010b81d8040822880155270a8bfa880189470288018d484c570101800131128bfb4c41001e8b09492105594c49154c4f024f02525702008bfc240b2458178bfb088c0a8b075732088b0a16a744800373622d8bfc88ff01498c028bfd88014b8cfd1444800361622d8bfc88feeb8c00270b8c01228c038b038bfb0c4100468bfd5702008b03494e02250b25588b074922594c49154c494f034f03525702004c5702204f0288017a46028b015702004c16504915240a165706004c508c0123088c0342ffb28b008b0188019d8b028bfd8801c88cfd8b088bfc8bfd4f038801ed488cfd8b068b078bfb880310572208178bfb0b8bff3811222a654412448bff38120e448bff38148b0412448bff382032031244320a7301448b05098bfe38080e44898a00008800092228654421061344898a000032074922270665440d410006210688fe1f8922270565448b000e410006210488fe0e89898a01018bffbe44898a02008bfe810a088b00320c0d41002ab12107b2102108b219270cb21e270cb21f8bff8d020003000942000a22b2014200043200b201b342ffce898a02018bfe8bff50898a01028bffbe898a0202222947038bfebe400008228bff8c018c00898b0522598c03228c018b018b030c4100498b055702008b01250b25588c008bff22598c04228c028b028b040c4100228bff5702008b02250b25588b0012410008238bff8c018c00898b0223088c0242ffd68b0123088c0142ffaf228bff8c018c00898a0303320ab18bfeb2288bfdb22723b22449b22c8bffb22ab22922b22323b22280074556542d54434bb22580094576656e74204e4654b2262106b21022b201b3b43c8bfe8bff898a02018bfebe4000088bfe8bffbf42001d8b005702008bff570200504915240a165706004c508bfebc488bfe4cbf8bff4c898a02018bfebe4000088bfe8bffbf42001d8b005702008bff570200504915250a165706004c508bfebc488bfe4cbf8bff4c898a04022229498bfe2259498bff225912448bfcbe40007a270b8c00222704654c8c0244228c018b018b020c4100258b0057020080080000000000000000504915240a165706004c508c008b0123088c0142ffd38b03168b004922598bfd0d448bfd240b2104084f025d8bfe152107084916570602270d4c504c8bff150816570602508bfe508bff504c508bfc4cbf4200958b04492105594c49154c494b034f0352495702008bfd240b494e032458178b0308164b0122598bfd0d444f022104084c5d4e024922594c492104594b014f034b02525702008bfe570200504915250a165706004c504e024f03525702008bff570200504915240a165706004c504b01152107084916570602270d4c504c4b02150816570602504f02504c504c508bfcbc488bfc4cbf8bfe8bff8c018c00898a03018bfe573a08178bff08168bfe4c5c3a8cfe8bfd228bfebb8bfe898a020088fd128bfe8bff88001a44320ab18bfeb214b2008bffb21123b2122105b21022b201b3898a020129270a8bfe88fd5088fd5644492104594c492105594c4f024f025249224c2259228b048b030c8b028c004100218b015702008b04240b24588bff16a8410006238c004200098b0423088c0442ffd3898a030088fc992228654421061244b18bfdb22e22b22f8bfeb22d2108b21022b201b3898a000088fc762228654421061244320a4973004c4e0244497301444f024c09b1222b65444b02b200b207b20823b21022b201b3222a65444b014c700044b1222a6544222b65444f02b212b214b211b2002105b21022b201b3898a00002707296727052267270622672b3203672a22672822672704226780175b4556454e54204d414e414745525d2043726561746564b089",
+              "153: itxn_field ApprovalProgramPages",
+              "156: int appl",
+              "157: itxn_field TypeEnum",
+              "160: int 0",
+              "161: itxn_field Fee",
+              "174: itxn_submit",
+              "175: itxn CreatedApplicationID",
+              "178: dup",
+              "179: itob",
+              "180: byte \"Create manager: event \"",
+              "181: swap",
+              "182: concat",
+              "185: byte \" \"",
+              "188: concat",
+              "189: byte \"from\"",
+              "190: concat",
+              "193: byte \" \"",
+              "196: concat",
+              "197: txn Sender",
+              "198: concat",
+              "207: log",
+              "215: itxn_begin",
+              "218: dup",
+              "219: app_params_get AppAddress",
+              "220: assert",
+              "221: uncover 2",
+              "222: itxn_field Sender",
+              "223: itxn_field Receiver",
+              "226: int 1000000",
+              "227: itxn_field Amount",
+              "230: int pay",
+              "231: itxn_field TypeEnum",
+              "234: int 0",
+              "235: itxn_field Fee",
+              "243: itxn_submit",
+              "246: dup",
+              "247: app_params_get AppAddress",
+              "248: assert",
+              "249: byte \"Transfered 0.1 Algos to \"",
+              "250: swap",
+              "251: concat",
+              "252: log",
+              "255: dup",
+              "256: txn Sender",
+              "257: callsub add_event_manager_boxes"
+            ],
+            [
+              "299: add_event_manager_boxes:",
+              "304: proto 2 0",
+              "307: int 0",
+              "308: byte \"last_event_manager\"",
+              "309: app_global_get_ex",
+              "310: assert",
+              "311: byte \"em-\"",
+              "316: swap",
+              "317: callsub box_key_from_uint64"
+            ],
+            [
+              "346: box_key_from_uint64:",
+              "354: proto 2 1",
+              "357: frame_dig -1",
+              "358: itob",
+              "359: frame_dig -2",
+              "360: swap",
+              "361: concat",
+              "362: retsub"
+            ],
+            [
+              "320: int 0",
+              "321: byte \"last_event_manager\"",
+              "322: app_global_get_ex",
+              "323: assert",
+              "324: byte \"ce-\"",
+              "329: swap",
+              "330: callsub box_key_from_uint64"
+            ],
+            [
+              "346: box_key_from_uint64:",
+              "354: proto 2 1",
+              "357: frame_dig -1",
+              "358: itob",
+              "359: frame_dig -2",
+              "360: swap",
+              "361: concat",
+              "362: retsub"
+            ],
+            [
+              "333: frame_dig -2",
+              "334: itob",
+              "335: uncover 2",
+              "336: swap",
+              "337: box_put",
+              "340: frame_dig -1",
+              "341: box_put",
+              "342: retsub"
+            ],
+            [
+              "260: int 0",
+              "261: byte \"last_event_manager\"",
+              "262: app_global_get_ex",
+              "263: assert",
+              "264: int 1",
+              "265: +",
+              "266: byte \"last_event_manager\"",
+              "267: swap",
+              "268: app_global_put",
+              "271: retsub"
+            ],
+            [
+              "40: itob",
+              "41: byte 0x151f7c75",
+              "42: swap",
+              "43: concat",
+              "44: log",
+              "45: int 1",
+              "46: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 2 -> 20 -> 3 -> 4 -> 8 -> 19 -> 9",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.event_factory.contract.EventFactory.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "427: __init__:",
+              "430: proto 0 0",
+              "433: byte \"last_event_manager\"",
+              "434: int 0",
+              "435: app_global_put",
+              "438: byte \"factory_owner\"",
+              "439: txn Sender",
+              "440: app_global_put",
+              "443: byte \"Event Factory created\"",
+              "444: log",
+              "445: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method create_event_manager(pay)uint64",
+              "14: method withdraw()void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_create_event_manager_route@4 main_withdraw_route@5"
+            ],
+            [
+              "48: main_withdraw_route@5:",
+              "51: txn OnCompletion",
+              "52: !",
+              "53: assert",
+              "54: txn ApplicationID",
+              "55: assert",
+              "56: callsub withdraw"
+            ],
+            [
+              "366: withdraw:",
+              "370: proto 0 0",
+              "373: global CurrentApplicationAddress",
+              "376: dup",
+              "377: acct_params_get AcctBalance",
+              "378: swap",
+              "379: cover 2",
+              "380: assert",
+              "381: dup",
+              "382: acct_params_get AcctMinBalance",
+              "383: assert",
+              "384: uncover 2",
+              "385: swap",
+              "386: -",
+              "394: itxn_begin",
+              "397: int 0",
+              "398: byte \"factory_owner\"",
+              "399: app_global_get_ex",
+              "400: assert",
+              "401: uncover 2",
+              "402: itxn_field Sender",
+              "403: itxn_field Receiver",
+              "404: itxn_field Amount",
+              "407: int pay",
+              "408: itxn_field TypeEnum",
+              "411: int 0",
+              "412: itxn_field Fee",
+              "420: itxn_submit",
+              "423: retsub"
+            ],
+            [
+              "57: int 1",
+              "58: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 2 -> 20 -> 3 -> 10",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.event_factory.contract.EventFactory.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "427: __init__:",
+              "430: proto 0 0",
+              "433: byte \"last_event_manager\"",
+              "434: int 0",
+              "435: app_global_put",
+              "438: byte \"factory_owner\"",
+              "439: txn Sender",
+              "440: app_global_put",
+              "443: byte \"Event Factory created\"",
+              "444: log",
+              "445: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "60: main_bare_routing@8:",
+              "63: txn OnCompletion",
+              "64: !",
+              "65: assert",
+              "66: txn ApplicationID",
+              "67: !",
+              "68: assert",
+              "69: int 1",
+              "70: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 4 -> 6 -> 11 -> 14 -> 12 -> 15 -> 18 -> 16 -> 18 -> 17 -> 13 -> 7",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.event_factory.contract.EventFactory.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method create_event_manager(pay)uint64",
+              "14: method withdraw()void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_create_event_manager_route@4 main_withdraw_route@5"
+            ],
+            [
+              "19: main_create_event_manager_route@4:",
+              "22: txn OnCompletion",
+              "23: !",
+              "24: assert",
+              "25: txn ApplicationID",
+              "26: assert",
+              "29: txn GroupIndex",
+              "30: int 1",
+              "31: -",
+              "32: dup",
+              "33: Gtxns TypeEnum",
+              "34: int pay",
+              "35: ==",
+              "36: assert",
+              "39: callsub create_event_manager"
+            ],
+            [
+              "74: create_event_manager:",
+              "78: proto 1 1",
+              "81: int 2",
+              "82: callsub security_checks"
+            ],
+            [
+              "275: security_checks:",
+              "282: proto 1 0",
+              "285: global GroupSize",
+              "286: frame_dig -1",
+              "287: ==",
+              "288: assert",
+              "291: txn RekeyTo",
+              "292: global ZeroAddress",
+              "293: ==",
+              "294: assert",
+              "295: retsub"
+            ],
+            [
+              "85: frame_dig -1",
+              "86: Gtxns Amount",
+              "91: int 2029800",
+              "97: >=",
+              "105: assert",
+              "108: global CurrentApplicationAddress",
+              "121: itxn_begin",
+              "124: int 1",
+              "125: itxn_field ExtraProgramPages",
+              "128: int NoOp",
+              "129: itxn_field OnCompletion",
+              "132: int 0",
+              "133: itxn_field LocalNumUint",
+              "136: int 0",
+              "137: itxn_field LocalNumByteSlice",
+              "140: int 5",
+              "141: itxn_field GlobalNumUint",
+              "144: int 2",
+              "145: itxn_field GlobalNumByteSlice",
+              "148: byte 0x0a810143",
+              "149: itxn_field ClearStateProgramPages",
+              "152: byte 0x0a2009000108200204030605260e0c6576656e745f737461747573000a757364635f61737365740b6576656e745f6f776e65720f6c6173745f747970655f696e6465780b6576656e745f626567696e096576656e745f656e64046e616d650374742d0120036f742d0200000306810102000631184000038807f0311b4100de80044290fab48004d2783a8980046d95748780047140c2538004b7355fd1361a008e05000100430076008c00a50031191444311844361a01570200361a0217c01c361a0317c030361a0417361a0517361a06361a07361a08361a09361a0a361a0b3116230949381023124488007a234331191444311844361a0117c01c361a0217361a0317361a04311621040949381023124431162309493810210512448801f0234331191444311844361a0117c01c361a021788063f234331191444311844361a0117c01c361a0217361a0388069f2343311914443118448806b62343311914443118144423438a0c00292104880125320a8bff38074b0112448bff3820320312444973014c4e02442228654414448bf5320313442b8bf567b149b200b21422b2128bf6b2112105b21022b201b32a8bf667320781c0d102088bf70c448bf78180a305088bf80c4427058bf76727068bf8678bf92259228b038b020c498c004100758bf95702008b00448b03494e0221040b4b014c594a59210408584c8bfa5702004b01250b25584c8bfb5702004b01240b494e0224584c8bfc5702004b0124584c8bfd5702004b0124584c8bfe5702004c2458800200424f06504f04504f03504f02504c504f02504b014c8800564823088c0342ff8027078bf46722270465448b020827044c6723880054320a7301448b01098bff3808124480175b4556454e54204d414e414745525d2053746172746564b0898a010032048bff1244312032031244898a020127088bfe8800068bffbf8bff898a02018bff168bfe4c50898a01002228654c494f02448bff1341003e288bff678b001680235b4556454e54204d414e4745525d2053746174757320557064617465642066726f6d204c502709508002746f502709508bff1650b0898a060022470229210688ff7988015f320a498bfe38074b0112448bfe38203203124473014427088bfc88ff7949880174498bfd22598bfb124449572a08174c573a08178bfb08494f020e4481c8010b81d8040822880155270a8bfa880189470288018d484c570101800131128bfb4c41001e8b09492105594c49154c4f024f02525702008bfc240b2458178bfb088c0a8b075732088b0a16a744800373622d8bfc88ff01498c028bfd88014b8cfd1444800361622d8bfc88feeb8c00270b8c01228c038b038bfb0c4100468bfd5702008b03494e02250b25588b074922594c49154c494f034f03525702004c5702204f0288017a46028b015702004c16504915240a165706004c508c0123088c0342ffb28b008b0188019d8b028bfd8801c88cfd8b088bfc8bfd4f038801ed488cfd8b068b078bfb880310572208178bfb0b8bff3811222a654412448bff38120e448bff38148b0412448bff382032031244320a7301448b05098bfe38080e44898a00008800092228654421061344898a000032074922270665440d410006210688fe1f8922270565448b000e410006210488fe0e89898a01018bffbe44898a02008bfe810a088b00320c0d41002ab12107b2102108b219270cb21e270cb21f8bff8d020003000942000a22b2014200043200b201b342ffce898a02018bfe8bff50898a01028bffbe898a0202222947038bfebe400008228bff8c018c00898b0522598c03228c018b018b030c4100498b055702008b01250b25588c008bff22598c04228c028b028b040c4100228bff5702008b02250b25588b0012410008238bff8c018c00898b0223088c0242ffd68b0123088c0142ffaf228bff8c018c00898a0303320ab18bfeb2288bfdb22723b22449b22c8bffb22ab22922b22323b22280074556542d54434bb22580094576656e74204e4654b2262106b21022b201b3b43c8bfe8bff898a02018bfebe4000088bfe8bffbf42001d8b005702008bff570200504915240a165706004c508bfebc488bfe4cbf8bff4c898a02018bfebe4000088bfe8bffbf42001d8b005702008bff570200504915250a165706004c508bfebc488bfe4cbf8bff4c898a04022229498bfe2259498bff225912448bfcbe40007a270b8c00222704654c8c0244228c018b018b020c4100258b0057020080080000000000000000504915240a165706004c508c008b0123088c0142ffd38b03168b004922598bfd0d448bfd240b2104084f025d8bfe152107084916570602270d4c504c8bff150816570602508bfe508bff504c508bfc4cbf4200958b04492105594c49154c494b034f0352495702008bfd240b494e032458178b0308164b0122598bfd0d444f022104084c5d4e024922594c492104594b014f034b02525702008bfe570200504915250a165706004c504e024f03525702008bff570200504915240a165706004c504b01152107084916570602270d4c504c4b02150816570602504f02504c504c508bfcbc488bfc4cbf8bfe8bff8c018c00898a03018bfe573a08178bff08168bfe4c5c3a8cfe8bfd228bfebb8bfe898a020088fd128bfe8bff88001a44320ab18bfeb214b2008bffb21123b2122105b21022b201b3898a020129270a8bfe88fd5088fd5644492104594c492105594c4f024f025249224c2259228b048b030c8b028c004100218b015702008b04240b24588bff16a8410006238c004200098b0423088c0442ffd3898a030088fc992228654421061244b18bfdb22e22b22f8bfeb22d2108b21022b201b3898a000088fc762228654421061244320a4973004c4e0244497301444f024c09b1222b65444b02b200b207b20823b21022b201b3222a65444b014c700044b1222a6544222b65444f02b212b214b211b2002105b21022b201b3898a00002707296727052267270622672b3203672a22672822672704226780175b4556454e54204d414e414745525d2043726561746564b089",
+              "153: itxn_field ApprovalProgramPages",
+              "156: int appl",
+              "157: itxn_field TypeEnum",
+              "160: int 0",
+              "161: itxn_field Fee",
+              "174: itxn_submit",
+              "175: itxn CreatedApplicationID",
+              "178: dup",
+              "179: itob",
+              "180: byte \"Create manager: event \"",
+              "181: swap",
+              "182: concat",
+              "185: byte \" \"",
+              "188: concat",
+              "189: byte \"from\"",
+              "190: concat",
+              "193: byte \" \"",
+              "196: concat",
+              "197: txn Sender",
+              "198: concat",
+              "207: log",
+              "215: itxn_begin",
+              "218: dup",
+              "219: app_params_get AppAddress",
+              "220: assert",
+              "221: uncover 2",
+              "222: itxn_field Sender",
+              "223: itxn_field Receiver",
+              "226: int 1000000",
+              "227: itxn_field Amount",
+              "230: int pay",
+              "231: itxn_field TypeEnum",
+              "234: int 0",
+              "235: itxn_field Fee",
+              "243: itxn_submit",
+              "246: dup",
+              "247: app_params_get AppAddress",
+              "248: assert",
+              "249: byte \"Transfered 0.1 Algos to \"",
+              "250: swap",
+              "251: concat",
+              "252: log",
+              "255: dup",
+              "256: txn Sender",
+              "257: callsub add_event_manager_boxes"
+            ],
+            [
+              "299: add_event_manager_boxes:",
+              "304: proto 2 0",
+              "307: int 0",
+              "308: byte \"last_event_manager\"",
+              "309: app_global_get_ex",
+              "310: assert",
+              "311: byte \"em-\"",
+              "316: swap",
+              "317: callsub box_key_from_uint64"
+            ],
+            [
+              "346: box_key_from_uint64:",
+              "354: proto 2 1",
+              "357: frame_dig -1",
+              "358: itob",
+              "359: frame_dig -2",
+              "360: swap",
+              "361: concat",
+              "362: retsub"
+            ],
+            [
+              "320: int 0",
+              "321: byte \"last_event_manager\"",
+              "322: app_global_get_ex",
+              "323: assert",
+              "324: byte \"ce-\"",
+              "329: swap",
+              "330: callsub box_key_from_uint64"
+            ],
+            [
+              "346: box_key_from_uint64:",
+              "354: proto 2 1",
+              "357: frame_dig -1",
+              "358: itob",
+              "359: frame_dig -2",
+              "360: swap",
+              "361: concat",
+              "362: retsub"
+            ],
+            [
+              "333: frame_dig -2",
+              "334: itob",
+              "335: uncover 2",
+              "336: swap",
+              "337: box_put",
+              "340: frame_dig -1",
+              "341: box_put",
+              "342: retsub"
+            ],
+            [
+              "260: int 0",
+              "261: byte \"last_event_manager\"",
+              "262: app_global_get_ex",
+              "263: assert",
+              "264: int 1",
+              "265: +",
+              "266: byte \"last_event_manager\"",
+              "267: swap",
+              "268: app_global_put",
+              "271: retsub"
+            ],
+            [
+              "40: itob",
+              "41: byte 0x151f7c75",
+              "42: swap",
+              "43: concat",
+              "44: log",
+              "45: int 1",
+              "46: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 4 -> 8 -> 19 -> 9",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.event_factory.contract.EventFactory.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method create_event_manager(pay)uint64",
+              "14: method withdraw()void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_create_event_manager_route@4 main_withdraw_route@5"
+            ],
+            [
+              "48: main_withdraw_route@5:",
+              "51: txn OnCompletion",
+              "52: !",
+              "53: assert",
+              "54: txn ApplicationID",
+              "55: assert",
+              "56: callsub withdraw"
+            ],
+            [
+              "366: withdraw:",
+              "370: proto 0 0",
+              "373: global CurrentApplicationAddress",
+              "376: dup",
+              "377: acct_params_get AcctBalance",
+              "378: swap",
+              "379: cover 2",
+              "380: assert",
+              "381: dup",
+              "382: acct_params_get AcctMinBalance",
+              "383: assert",
+              "384: uncover 2",
+              "385: swap",
+              "386: -",
+              "394: itxn_begin",
+              "397: int 0",
+              "398: byte \"factory_owner\"",
+              "399: app_global_get_ex",
+              "400: assert",
+              "401: uncover 2",
+              "402: itxn_field Sender",
+              "403: itxn_field Receiver",
+              "404: itxn_field Amount",
+              "407: int pay",
+              "408: itxn_field TypeEnum",
+              "411: int 0",
+              "412: itxn_field Fee",
+              "420: itxn_submit",
+              "423: retsub"
+            ],
+            [
+              "57: int 1",
+              "58: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 10",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.event_factory.contract.EventFactory.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "60: main_bare_routing@8:",
+              "63: txn OnCompletion",
+              "64: !",
+              "65: assert",
+              "66: txn ApplicationID",
+              "67: !",
+              "68: assert",
+              "69: int 1",
+              "70: return"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 0,
+      "description": "\nCheck: \"group-size-check\", Impact: High, Confidence: High\nDescription: Usage of absolute indexes without validating GroupSize\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#missing-groupsize-validation\n",
+      "check": "group-size-check",
+      "impact": "High",
+      "confidence": "High",
+      "help": "- Avoid using absolute indexes. Validate GroupSize if used.\n- Favor using ARC-4 ABI and relative indexes for group transactions.",
+      "paths": []
+    },
+    {
+      "type": "ExecutionPaths",
+      "count": 4,
+      "description": "\nCheck: \"rekey-to\", Impact: High, Confidence: High\nDescription: Rekeyable Logic Signatures\n\nWiki: https://github.com/crytic/tealer/wiki/Detector-Documentation#rekeyable-logicsig\n",
+      "check": "rekey-to",
+      "impact": "High",
+      "confidence": "High",
+      "help": "Validate `RekeyTo` field in the LogicSig.",
+      "paths": [
+        {
+          "short": "0 -> 1 -> 2 -> 20 -> 3 -> 4 -> 8 -> 19 -> 9",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.event_factory.contract.EventFactory.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "427: __init__:",
+              "430: proto 0 0",
+              "433: byte \"last_event_manager\"",
+              "434: int 0",
+              "435: app_global_put",
+              "438: byte \"factory_owner\"",
+              "439: txn Sender",
+              "440: app_global_put",
+              "443: byte \"Event Factory created\"",
+              "444: log",
+              "445: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method create_event_manager(pay)uint64",
+              "14: method withdraw()void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_create_event_manager_route@4 main_withdraw_route@5"
+            ],
+            [
+              "48: main_withdraw_route@5:",
+              "51: txn OnCompletion",
+              "52: !",
+              "53: assert",
+              "54: txn ApplicationID",
+              "55: assert",
+              "56: callsub withdraw"
+            ],
+            [
+              "366: withdraw:",
+              "370: proto 0 0",
+              "373: global CurrentApplicationAddress",
+              "376: dup",
+              "377: acct_params_get AcctBalance",
+              "378: swap",
+              "379: cover 2",
+              "380: assert",
+              "381: dup",
+              "382: acct_params_get AcctMinBalance",
+              "383: assert",
+              "384: uncover 2",
+              "385: swap",
+              "386: -",
+              "394: itxn_begin",
+              "397: int 0",
+              "398: byte \"factory_owner\"",
+              "399: app_global_get_ex",
+              "400: assert",
+              "401: uncover 2",
+              "402: itxn_field Sender",
+              "403: itxn_field Receiver",
+              "404: itxn_field Amount",
+              "407: int pay",
+              "408: itxn_field TypeEnum",
+              "411: int 0",
+              "412: itxn_field Fee",
+              "420: itxn_submit",
+              "423: retsub"
+            ],
+            [
+              "57: int 1",
+              "58: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 2 -> 20 -> 3 -> 10",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.event_factory.contract.EventFactory.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "6: callsub __init__"
+            ],
+            [
+              "427: __init__:",
+              "430: proto 0 0",
+              "433: byte \"last_event_manager\"",
+              "434: int 0",
+              "435: app_global_put",
+              "438: byte \"factory_owner\"",
+              "439: txn Sender",
+              "440: app_global_put",
+              "443: byte \"Event Factory created\"",
+              "444: log",
+              "445: retsub"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "60: main_bare_routing@8:",
+              "63: txn OnCompletion",
+              "64: !",
+              "65: assert",
+              "66: txn ApplicationID",
+              "67: !",
+              "68: assert",
+              "69: int 1",
+              "70: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 4 -> 8 -> 19 -> 9",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.event_factory.contract.EventFactory.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "13: method create_event_manager(pay)uint64",
+              "14: method withdraw()void",
+              "15: txna ApplicationArgs 0",
+              "16: match main_create_event_manager_route@4 main_withdraw_route@5"
+            ],
+            [
+              "48: main_withdraw_route@5:",
+              "51: txn OnCompletion",
+              "52: !",
+              "53: assert",
+              "54: txn ApplicationID",
+              "55: assert",
+              "56: callsub withdraw"
+            ],
+            [
+              "366: withdraw:",
+              "370: proto 0 0",
+              "373: global CurrentApplicationAddress",
+              "376: dup",
+              "377: acct_params_get AcctBalance",
+              "378: swap",
+              "379: cover 2",
+              "380: assert",
+              "381: dup",
+              "382: acct_params_get AcctMinBalance",
+              "383: assert",
+              "384: uncover 2",
+              "385: swap",
+              "386: -",
+              "394: itxn_begin",
+              "397: int 0",
+              "398: byte \"factory_owner\"",
+              "399: app_global_get_ex",
+              "400: assert",
+              "401: uncover 2",
+              "402: itxn_field Sender",
+              "403: itxn_field Receiver",
+              "404: itxn_field Amount",
+              "407: int pay",
+              "408: itxn_field TypeEnum",
+              "411: int 0",
+              "412: itxn_field Fee",
+              "420: itxn_submit",
+              "423: retsub"
+            ],
+            [
+              "57: int 1",
+              "58: return"
+            ]
+          ]
+        },
+        {
+          "short": "0 -> 1 -> 3 -> 10",
+          "blocks": [
+            [
+              "1: #pragma version 10"
+            ],
+            [
+              "3: smart_contracts.event_factory.contract.EventFactory.approval_program:",
+              "4: txn ApplicationID",
+              "5: bnz main_entrypoint@2"
+            ],
+            [
+              "8: main_entrypoint@2:",
+              "11: txn NumAppArgs",
+              "12: bz main_bare_routing@8"
+            ],
+            [
+              "60: main_bare_routing@8:",
+              "63: txn OnCompletion",
+              "64: !",
+              "65: assert",
+              "66: txn ApplicationID",
+              "67: !",
+              "68: assert",
+              "69: int 1",
+              "70: return"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

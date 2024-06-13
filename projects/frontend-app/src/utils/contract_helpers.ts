@@ -1,4 +1,4 @@
-import algosdk, { Algodv2, Account, encodeUint64, decodeAddress } from "algosdk";
+import algosdk, { Algodv2, Account, encodeUint64, decodeAddress, encodeAddress } from "algosdk";
 import * as algokit from "@algorandfoundation/algokit-utils";
 import { AlgoAmount } from "@algorandfoundation/algokit-utils/types/amount";
 
@@ -281,6 +281,36 @@ export function decodeEventMangerBoxFromFactory(boxBytes: Uint8Array): number {
   const codec = algosdk.ABIType.from("uint64");
   const decodedValue = codec.decode(boxBytes);
   return decodedValue as number;
+}
+
+export type OwnerBox = {
+  seats: string[];
+  asaIds: number[];
+  boughtTickets: number[];
+};
+
+export function decodeOwnerBox(owner_box_val: Uint8Array): OwnerBox {
+  const owner_box_abi_codec = algosdk.ABIType.from("(byte[32][],uint64[],uint64[])");
+  const decoded_owner_box = owner_box_abi_codec.decode(owner_box_val) as algosdk.ABIValue[];
+  const d_seats = decoded_owner_box[0] as Uint8Array[];
+  // const n_seats = d_seats.length / 32;
+  const seats = [] as string[];
+  for (let i = 0; i < d_seats.length; i++) {
+    //const _s = d_seats.slice(i * 32, 32 * (i + 1));
+    const _s = d_seats[i] 
+    seats.push(encodeAddress(_s));
+  }
+  //console.log(`seats ${d_seats}`);
+  const asaIds = decoded_owner_box[1] as number[];
+  const bought_tickets = decoded_owner_box[2] as number[];
+
+  const ob: OwnerBox = {
+    seats: seats,
+    asaIds: asaIds,
+    boughtTickets: bought_tickets,
+  };
+  console.log(`box is: ${ob.asaIds} - ${ob.seats}- ${ob.boughtTickets}`);
+  return ob;
 }
 
 export function encodeBase64(str: string): string {
