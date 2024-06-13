@@ -69,6 +69,9 @@ export default function ListEvents() {
       const boxName = encodeBoxNameUint8ArrayFromUint64(EVENT_MANAGER_BOX_PREFIX, i);
       const box = await factoryClient.appClient.getBoxValue(boxName);
       const appId = decodeEventMangerBoxFromFactory(box);
+      if(appId == 680738104){
+        continue
+      }
       // read state
       const managerClient = new EventManagerClient(
         {
