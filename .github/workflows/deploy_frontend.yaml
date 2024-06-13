@@ -48,11 +48,22 @@ jobs:
       - name: Build
         working-directory: ./projects/frontend-app
         run: npm run build
-        # env:
-        #  VITE_PINATA_API_KEY: "${{ secrets.VITE_PINATA_API_KEY }}"
-        #  VITE_PINATA_API_SECRET: "${{ secrets.VITE_PINATA_API_SECRET }}"
-        #  VITE_TESTNET_AF_ADDR: "${{ secrets.VITE_TESTNET_AF_ADDR }}"
-        #  VITE_PINATA_JWT: "${{ secrets.VITE_PINATA_JWT }}"
+        env:
+          VITE_ENVIRONMENT: "production"
+          VITE_ALGOD_TOKEN: ""
+          VITE_ALGOD_SERVER: "https://testnet-api.algonode.cloud"
+          VITE_ALGOD_PORT: ""
+          VITE_ALGOD_NETWORK: "testnet"
+          VITE_INDEXER_TOKEN: ""
+          VITE_INDEXER_SERVER: "https://testnet-idx.algonode.cloud"
+          VITE_INDEXER_PORT: ""
+          VITE_DISPENSER: 680738109
+          VITE_USDCA: 680738127
+          VITE_EVENT_FACTORY_CONTRACT: 680738089
+          VITE_GEOMAP_API_KEY: "${{ secrets.VITE_GEOMAP_API_KEY }}"
+          VITE_WALLET_CONNECT_ID: "${{ secrets.VITE_WALLET_CONNECT_ID }}"
+          VITE_PINATA_JWT: "${{ secrets.VITE_PINATA_JWT }}"
+          
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
