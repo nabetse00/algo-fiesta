@@ -24,10 +24,6 @@ from typing import TypeAlias
 #############
 # Constants #
 #############
-# usdc asa
-# USDC_A_LOCALNET = ???
-# USDC_A_TESTNET = 10458941
-# USDC_A_MAINNET = 31566704
 MIN_DURATION = 24 * 3600  # one day in hours
 MIN_AHEAD_TIME = 12 * 3600  # 12h in seconds
 # State
