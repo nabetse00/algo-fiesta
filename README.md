@@ -94,4 +94,4 @@ See https://github.com/algorandfoundation/puya for documentation
 
 [Short demo](https://youtu.be/ovxvIGQbRzk)
 
-[Long demo]()
+[Long demo](https://youtu.be/-xsNqTcNFnQ)
