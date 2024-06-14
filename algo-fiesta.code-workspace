@@ -41,6 +41,9 @@
       "optup",
       "uenumerate",
       "urange"
+    ],
+    "markdown.marp.themes": [
+      "https://rainbowflesh.github.io/css/rose-pine-moon.css"
     ]
   },
   "extensions": {

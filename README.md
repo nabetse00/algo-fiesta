@@ -58,6 +58,8 @@ Open your browser and navigate to http://localhost:5173/algo-fiesta/ to use Algo
 
 Go to https://nabetse00.github.io/algo-fiesta/ to test a live demo.
 
+![live demo qr](./assets//QR_live_demo.png)
+
 ![sreen1](./assets/screen1.png)
 
 ![sreen1-2](./assets/screen1-2.png)
@@ -97,3 +99,8 @@ See https://github.com/algorandfoundation/puya for documentation
 [Short demo](https://youtu.be/ovxvIGQbRzk)
 
 [Long demo](https://youtu.be/-xsNqTcNFnQ)
+
+## Pitch Deck - Algorand Globla Hackathon 2024
+
+[PictchDeck presentation](./PitchDeck.md)
+[pdf](./PitchDeck.pdf)
