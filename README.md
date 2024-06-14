@@ -1,6 +1,7 @@
 # AlgoFiesta
 
 ![test](./projects/frontend-app/src/assets/logo_h.png)
+
 *Empowering Events on the Blockchain*
 
 AlgoFiesta is a decentralized application built on the Algorand blockchain, providing a seamless platform for creating, managing, and attending events. 
@@ -64,6 +65,8 @@ Go to https://nabetse00.github.io/algo-fiesta/ to test a live demo.
 ![sreen3](./assets/screen3.png)
 
 ![sreen4](./assets/screen4.png)
+
+![sreen5](./assets/screen5.png)
 
 ## Contracts
 
