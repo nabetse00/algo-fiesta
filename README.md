@@ -60,6 +60,8 @@ Go to https://nabetse00.github.io/algo-fiesta/ to test a live demo.
 
 ![sreen1](./assets/screen1.png)
 
+![sreen1-2](./assets/screen1-2.png)
+
 ![sreen2](./assets/screen2.png)
 
 ![sreen3](./assets/screen3.png)
